@@ -27,6 +27,8 @@ class ApiConstants {
   static const String myQueue = '$baseUrl/waitinglist/my';
   static const String joinQueue = '$baseUrl/waitinglist/join';
   static const String leaveQueue = '$baseUrl/waitinglist/leave';
+  static const String acceptQueue = '$baseUrl/waitinglist/accept';
+  static const String declineQueue = '$baseUrl/waitinglist/decline';
 
   // Profile
   static const String profile = '$baseUrl/profile';

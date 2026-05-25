@@ -4,6 +4,7 @@ const Booking = require('../models/Booking');
 const ParkingSpot = require('../models/ParkingSpot');
 const User = require('../models/User');
 const Notification = require('../models/Notification');
+const { triggerQueueForSpot } = require('../services/queueService');
 
 // Create booking
 router.post('/', auth, async (req, res) => {
@@ -30,18 +31,15 @@ router.post('/', auth, async (req, res) => {
       qrCode: `AAST-${spotId}-${Date.now()}`,
     });
 
-    // Update spot status
     await ParkingSpot.findOneAndUpdate(
       { spotId },
       { status: 'reserved', currentBookingId: booking._id, availableAt: endTime }
     );
 
-    // Update user stats
     await User.findByIdAndUpdate(req.user._id, {
       $inc: { totalBookings: 1, totalSpent: cost },
     });
 
-    // Create notification
     await Notification.create({
       userId: req.user._id,
       type: 'success',
@@ -49,7 +47,7 @@ router.post('/', auth, async (req, res) => {
       message: `Your parking spot ${spotId} has been reserved for ${duration} hour${duration > 1 ? 's' : ''}`,
     });
 
-    // Auto-complete after duration
+    // Auto-complete after duration — then trigger FIFO queue
     setTimeout(async () => {
       await Booking.findByIdAndUpdate(booking._id, { status: 'completed' });
       await ParkingSpot.findOneAndUpdate({ spotId }, { status: 'available', currentBookingId: null, availableAt: null });
@@ -59,6 +57,8 @@ router.post('/', auth, async (req, res) => {
         title: 'Booking Completed',
         message: `Thank you for using AAST Parking. Total: ${cost === 0 ? 'FREE' : cost + ' EGP'}`,
       });
+      // 🔔 Notify first waiting user that spot is now free
+      await triggerQueueForSpot(spotId);
     }, duration * 60 * 60 * 1000);
 
     res.status(201).json(booking);
@@ -88,7 +88,7 @@ router.get('/:id', auth, async (req, res) => {
   }
 });
 
-// Cancel booking
+// Cancel booking — triggers FIFO queue after spot is freed
 router.patch('/:id/cancel', auth, async (req, res) => {
   try {
     const booking = await Booking.findById(req.params.id);
@@ -97,13 +97,18 @@ router.patch('/:id/cancel', auth, async (req, res) => {
       return res.status(403).json({ message: 'Unauthorized' });
     }
 
+    const spotId = booking.spotId;
+
     await Booking.findByIdAndUpdate(req.params.id, { status: 'cancelled' });
     await ParkingSpot.findOneAndUpdate(
-      { spotId: booking.spotId },
+      { spotId },
       { status: 'available', currentBookingId: null, availableAt: null }
     );
 
     res.json({ message: 'Booking cancelled' });
+
+    // 🔔 Trigger FIFO queue now that spot is free
+    triggerQueueForSpot(spotId);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
