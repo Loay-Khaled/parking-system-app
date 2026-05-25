@@ -32,7 +32,9 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!mounted) return;
 
     if (result['success']) {
-      Navigator.pushReplacementNamed(context, '/home');
+      final isAdmin = await AuthService.isAdmin();
+      if (!mounted) return;
+      Navigator.pushReplacementNamed(context, isAdmin ? '/admin-home' : '/home');
     } else {
       setState(() { _error = result['message']; _loading = false; });
     }
@@ -56,8 +58,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     shape: BoxShape.circle,
-                    border: Border.all(color: AppColors.primary.withOpacity(0.2), width: 2),
-                    boxShadow: [BoxShadow(color: AppColors.primary.withOpacity(0.1), blurRadius: 20)],
+                    border: Border.all(color: AppColors.primary.withValues(alpha: 0.2), width: 2),
+                    boxShadow: [BoxShadow(color: AppColors.primary.withValues(alpha: 0.1), blurRadius: 20)],
                   ),
                   child: const Icon(Icons.local_parking, size: 52, color: AppColors.primary),
                 ),
@@ -71,7 +73,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     margin: const EdgeInsets.only(bottom: 16),
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: AppColors.error.withOpacity(0.1),
+                      color: AppColors.error.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(children: [

@@ -95,7 +95,7 @@ class _SpotDetailsScreenState extends State<SpotDetailsScreen> {
             children: [
               Container(
                 width: 64, height: 64,
-                decoration: BoxDecoration(color: AppColors.success.withOpacity(0.1), borderRadius: BorderRadius.circular(16)),
+                decoration: BoxDecoration(color: AppColors.success.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(16)),
                 child: const Icon(Icons.location_on, color: AppColors.success, size: 36),
               ),
               const SizedBox(width: 16),
@@ -109,7 +109,7 @@ class _SpotDetailsScreenState extends State<SpotDetailsScreen> {
               const Spacer(),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                decoration: BoxDecoration(color: statusColor.withOpacity(0.1), borderRadius: BorderRadius.circular(30)),
+                decoration: BoxDecoration(color: statusColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(30)),
                 child: Text(statusText, style: TextStyle(color: statusColor, fontWeight: FontWeight.w600)),
               ),
             ],
@@ -173,9 +173,9 @@ class _SpotDetailsScreenState extends State<SpotDetailsScreen> {
         color: const Color(0xFFEFF6FF), borderRadius: BorderRadius.circular(12),
         border: Border.all(color: const Color(0xFFBFDBFE)),
       ),
-      child: Column(
+      child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: const [
+        children: [
           Text('Important Notice', style: TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF1E40AF))),
           SizedBox(height: 8),
           Text('• Please arrive within 15 minutes of booking', style: TextStyle(fontSize: 13, color: Color(0xFF1D4ED8))),

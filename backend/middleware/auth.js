@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
-module.exports = async (req, res, next) => {
+const authMiddleware = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -16,3 +16,13 @@ module.exports = async (req, res, next) => {
     res.status(401).json({ message: 'Invalid token' });
   }
 };
+
+const requireAdmin = (req, res, next) => {
+  if (!req.user || !req.user.isAdmin) {
+    return res.status(403).json({ message: 'Admin access required' });
+  }
+  next();
+};
+
+module.exports = authMiddleware;
+module.exports.requireAdmin = requireAdmin;

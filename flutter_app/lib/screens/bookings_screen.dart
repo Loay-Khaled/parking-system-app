@@ -117,7 +117,7 @@ class _BookingCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: booking.isActive ? AppColors.primary.withOpacity(0.3) : AppColors.border),
+        border: Border.all(color: booking.isActive ? AppColors.primary.withValues(alpha: 0.3) : AppColors.border),
       ),
       child: Column(
         children: [
@@ -126,7 +126,7 @@ class _BookingCard extends StatelessWidget {
               Container(
                 width: 48, height: 48,
                 decoration: BoxDecoration(
-                  color: booking.isActive ? AppColors.primary.withOpacity(0.1) : AppColors.muted.withOpacity(0.1),
+                  color: booking.isActive ? AppColors.primary.withValues(alpha: 0.1) : AppColors.muted.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(Icons.location_on, color: booking.isActive ? AppColors.primary : AppColors.muted, size: 26),
@@ -139,7 +139,7 @@ class _BookingCard extends StatelessWidget {
               if (booking.isActive)
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                  decoration: BoxDecoration(color: AppColors.success.withOpacity(0.1), borderRadius: BorderRadius.circular(20)),
+                  decoration: BoxDecoration(color: AppColors.success.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(20)),
                   child: const Text('Active', style: TextStyle(color: AppColors.success, fontSize: 12, fontWeight: FontWeight.w600)),
                 ),
             ],

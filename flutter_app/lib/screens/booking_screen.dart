@@ -118,7 +118,7 @@ class _BookingScreenState extends State<BookingScreen> {
                 margin: const EdgeInsets.only(bottom: 10),
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: selected ? AppColors.primary.withOpacity(0.05) : Colors.white,
+                  color: selected ? AppColors.primary.withValues(alpha: 0.05) : Colors.white,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: selected ? AppColors.primary : AppColors.border, width: selected ? 2 : 1),
                 ),
@@ -133,7 +133,7 @@ class _BookingScreenState extends State<BookingScreen> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text('$hours ${hours == 1 ? 'Hour' : 'Hours'}',
-                          style: TextStyle(fontWeight: FontWeight.w500, color: AppColors.foreground, fontSize: 15)),
+                          style: const TextStyle(fontWeight: FontWeight.w500, color: AppColors.foreground, fontSize: 15)),
                     ),
                     Text(cost == 0 ? 'FREE' : '$cost EGP',
                         style: TextStyle(fontWeight: FontWeight.w700,
@@ -152,7 +152,7 @@ class _BookingScreenState extends State<BookingScreen> {
               margin: const EdgeInsets.only(bottom: 10),
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: _isCustom ? AppColors.primary.withOpacity(0.05) : Colors.white,
+                color: _isCustom ? AppColors.primary.withValues(alpha: 0.05) : Colors.white,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: _isCustom ? AppColors.primary : AppColors.border, width: _isCustom ? 2 : 1),
               ),
@@ -253,9 +253,9 @@ class _BookingScreenState extends State<BookingScreen> {
             Text('Price Breakdown', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15, color: AppColors.foreground)),
           ]),
           const SizedBox(height: 16),
-          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-            const Text('First hour', style: TextStyle(fontSize: 13, color: AppColors.muted)),
-            const Text('FREE', style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.success, fontSize: 13)),
+          const Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+            Text('First hour', style: TextStyle(fontSize: 13, color: AppColors.muted)),
+            Text('FREE', style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.success, fontSize: 13)),
           ]),
           if (_duration > 1) ...[
             const SizedBox(height: 8),
@@ -286,7 +286,7 @@ class _BookingScreenState extends State<BookingScreen> {
         children: [
           const Icon(Icons.calendar_today, color: AppColors.muted, size: 16),
           const SizedBox(width: 8),
-          Text('Start: ', style: const TextStyle(color: AppColors.muted, fontSize: 13)),
+          const Text('Start: ', style: TextStyle(color: AppColors.muted, fontSize: 13)),
           const Text('Now', style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.foreground, fontSize: 13)),
           const Text('  •  ', style: TextStyle(color: AppColors.muted)),
           const Text('End: ', style: TextStyle(color: AppColors.muted, fontSize: 13)),

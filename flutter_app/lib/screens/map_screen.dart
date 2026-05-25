@@ -179,8 +179,8 @@ class _MapScreenState extends State<MapScreen> {
         decoration: BoxDecoration(
           color: color,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: color.withOpacity(0.3), width: 2),
-          boxShadow: canTap ? [BoxShadow(color: color.withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 3))] : null,
+          border: Border.all(color: color.withValues(alpha: 0.3), width: 2),
+          boxShadow: canTap ? [BoxShadow(color: color.withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 3))] : null,
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

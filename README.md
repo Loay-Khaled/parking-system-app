@@ -4,6 +4,29 @@ Full-stack mobile application for AAST Smart Parking System.
 
 ---
 
+Email: admin@aast.edu
+Password: Admin@1234
+
+## Quick Start
+
+**Terminal 1 — Backend:**
+
+```powershell
+cd "c:\Users\Loay khaled\Desktop\mobile app final\backend"
+npm run dev
+```
+
+Wait for `✅ Connected to MongoDB Atlas`
+
+**Terminal 2 — Flutter App:**
+
+```powershell
+cd "c:\Users\Loay khaled\Desktop\mobile app final\flutter_app"
+flutter run -d emulator-5554
+```
+
+---
+
 ## Project Structure
 
 ```
@@ -51,6 +74,7 @@ aast_parking/
 ## STEP 1 — Set Up the Backend
 
 ### Prerequisites
+
 - Node.js v18+ installed
 - Internet connection (MongoDB Atlas is cloud-hosted)
 
@@ -67,7 +91,9 @@ npm start           # Production
 The server starts on **port 3000**.
 
 ### MongoDB Atlas
+
 Your database is already configured in `.env`:
+
 ```
 MONGODB_URI=mongodb+srv://loay:123456Aa%40@cluster0.d142x1d.mongodb.net/aast_parking?appName=Cluster0
 ```
@@ -76,27 +102,28 @@ Parking spots (18 spots across Zones A, B, C) are auto-seeded on first run.
 
 ### API Endpoints
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | /api/auth/register | Register new user |
-| POST | /api/auth/login | Login |
-| GET | /api/spots | Get all parking spots |
-| GET | /api/spots/:spotId | Get single spot |
-| POST | /api/bookings | Create booking |
-| GET | /api/bookings/my | Get my bookings |
-| PATCH | /api/bookings/:id/cancel | Cancel booking |
-| GET | /api/notifications | Get notifications |
-| PATCH | /api/notifications/read-all | Mark all read |
-| GET | /api/waitinglist/my | Check queue status |
-| POST | /api/waitinglist/join | Join queue |
-| DELETE | /api/waitinglist/leave | Leave queue |
-| GET | /api/profile | Get profile |
+| Method | Endpoint                    | Description           |
+| ------ | --------------------------- | --------------------- |
+| POST   | /api/auth/register          | Register new user     |
+| POST   | /api/auth/login             | Login                 |
+| GET    | /api/spots                  | Get all parking spots |
+| GET    | /api/spots/:spotId          | Get single spot       |
+| POST   | /api/bookings               | Create booking        |
+| GET    | /api/bookings/my            | Get my bookings       |
+| PATCH  | /api/bookings/:id/cancel    | Cancel booking        |
+| GET    | /api/notifications          | Get notifications     |
+| PATCH  | /api/notifications/read-all | Mark all read         |
+| GET    | /api/waitinglist/my         | Check queue status    |
+| POST   | /api/waitinglist/join       | Join queue            |
+| DELETE | /api/waitinglist/leave      | Leave queue           |
+| GET    | /api/profile                | Get profile           |
 
 ---
 
 ## STEP 2 — Set Up the Flutter App
 
 ### Prerequisites
+
 - Flutter SDK 3.x installed (`flutter doctor` should pass)
 - Android Studio / VS Code with Flutter extension
 - Android Emulator or physical device
@@ -124,12 +151,14 @@ static const String baseUrl = 'http://192.168.1.XXX:3000/api';
 ```
 
 To find your PC's local IP:
+
 - Windows: run `ipconfig` in CMD → look for IPv4 Address
 - macOS/Linux: run `ifconfig` → look for inet
 
 ### Add Assets (Optional)
 
 Create these folders and add a logo PNG if you have one:
+
 ```
 flutter_app/assets/images/    ← add logo.png here
 flutter_app/assets/fonts/     ← add Poppins font files here
@@ -147,20 +176,20 @@ flutter run
 
 ## Screens
 
-| Screen | Route | Description |
-|--------|-------|-------------|
-| Splash | /splash | Animated logo, auto-navigates |
-| Login | /login | Email + password auth |
-| Register | /register | Name, email, password, car plate |
-| Home | /home | Dashboard with available spots count |
-| Map | /map | Grid view of all spots by zone |
-| Spot Details | /spot-details | Spot info + pricing |
-| Booking | /booking | Select duration, see price |
-| Confirmation | /confirmation | QR code + booking summary |
-| My Bookings | /bookings | Active + past bookings |
-| Waiting List | /waiting-list | Join/leave queue |
-| Notifications | /notifications | All user notifications |
-| Profile | /profile | User info + stats + logout |
+| Screen        | Route          | Description                          |
+| ------------- | -------------- | ------------------------------------ |
+| Splash        | /splash        | Animated logo, auto-navigates        |
+| Login         | /login         | Email + password auth                |
+| Register      | /register      | Name, email, password, car plate     |
+| Home          | /home          | Dashboard with available spots count |
+| Map           | /map           | Grid view of all spots by zone       |
+| Spot Details  | /spot-details  | Spot info + pricing                  |
+| Booking       | /booking       | Select duration, see price           |
+| Confirmation  | /confirmation  | QR code + booking summary            |
+| My Bookings   | /bookings      | Active + past bookings               |
+| Waiting List  | /waiting-list  | Join/leave queue                     |
+| Notifications | /notifications | All user notifications               |
+| Profile       | /profile       | User info + stats + logout           |
 
 ---
 
@@ -176,25 +205,25 @@ flutter run
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Mobile App | Flutter 3.x + Dart |
-| HTTP Client | http package |
-| Local Storage | shared_preferences |
-| QR Codes | qr_flutter |
-| Backend | Node.js + Express.js |
-| Database | MongoDB Atlas (Cloud) |
-| Authentication | JWT (JSON Web Tokens) |
-| Password Hashing | bcryptjs |
+| Layer            | Technology            |
+| ---------------- | --------------------- |
+| Mobile App       | Flutter 3.x + Dart    |
+| HTTP Client      | http package          |
+| Local Storage    | shared_preferences    |
+| QR Codes         | qr_flutter            |
+| Backend          | Node.js + Express.js  |
+| Database         | MongoDB Atlas (Cloud) |
+| Authentication   | JWT (JSON Web Tokens) |
+| Password Hashing | bcryptjs              |
 
 ---
 
 ## Color Scheme
 
-| Color | Hex | Usage |
-|-------|-----|-------|
-| Primary | #2563EB | Buttons, headers, active nav |
-| Available | #10B981 | Available spots |
-| Reserved | #F59E0B | Reserved spots |
-| Occupied | #EF4444 | Occupied spots, errors |
-| Success | #10B981 | Success states |
+| Color     | Hex     | Usage                        |
+| --------- | ------- | ---------------------------- |
+| Primary   | #2563EB | Buttons, headers, active nav |
+| Available | #10B981 | Available spots              |
+| Reserved  | #F59E0B | Reserved spots               |
+| Occupied  | #EF4444 | Occupied spots, errors       |
+| Success   | #10B981 | Success states               |

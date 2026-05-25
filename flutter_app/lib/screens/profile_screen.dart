@@ -95,7 +95,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             children: [
               Container(
                 width: 72, height: 72,
-                decoration: BoxDecoration(color: Colors.white24, shape: BoxShape.circle),
+                decoration: const BoxDecoration(color: Colors.white24, shape: BoxShape.circle),
                 child: const Icon(Icons.person, size: 40, color: Colors.white),
               ),
               const SizedBox(width: 16),
@@ -128,7 +128,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Row(children: [
             Container(
               width: 48, height: 48,
-              decoration: BoxDecoration(color: AppColors.primary.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+              decoration: BoxDecoration(color: AppColors.primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
               child: const Icon(Icons.directions_car, color: AppColors.primary, size: 26),
             ),
             const SizedBox(width: 12),
@@ -207,7 +207,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         width: double.infinity,
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppColors.error.withOpacity(0.1),
+          color: AppColors.error.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(14),
         ),
         child: const Row(mainAxisAlignment: MainAxisAlignment.center, children: [

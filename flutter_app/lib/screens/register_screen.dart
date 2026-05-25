@@ -62,8 +62,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     shape: BoxShape.circle,
-                    border: Border.all(color: AppColors.primary.withOpacity(0.2), width: 2),
-                    boxShadow: [BoxShadow(color: AppColors.primary.withOpacity(0.1), blurRadius: 20)],
+                    border: Border.all(color: AppColors.primary.withValues(alpha: 0.2), width: 2),
+                    boxShadow: [BoxShadow(color: AppColors.primary.withValues(alpha: 0.1), blurRadius: 20)],
                   ),
                   child: const Icon(Icons.local_parking, size: 42, color: AppColors.primary),
                 ),
@@ -77,7 +77,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     margin: const EdgeInsets.only(bottom: 16),
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: AppColors.error.withOpacity(0.1),
+                      color: AppColors.error.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(children: [

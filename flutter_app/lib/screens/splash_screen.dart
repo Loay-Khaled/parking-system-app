@@ -32,7 +32,14 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     await Future.delayed(const Duration(seconds: 3));
     if (!mounted) return;
     final isLoggedIn = await AuthService.isLoggedIn();
-    Navigator.pushReplacementNamed(context, isLoggedIn ? '/home' : '/login');
+    if (!mounted) return;
+    if (!isLoggedIn) {
+      Navigator.pushReplacementNamed(context, '/login');
+      return;
+    }
+    final admin = await AuthService.isAdmin();
+    if (!mounted) return;
+    Navigator.pushReplacementNamed(context, admin ? '/admin-home' : '/home');
   }
 
   @override
@@ -71,7 +78,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                           decoration: BoxDecoration(
                             color: Colors.white,
                             shape: BoxShape.circle,
-                            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 30, offset: const Offset(0, 10))],
+                            boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 30, offset: const Offset(0, 10))],
                           ),
                           child: const Icon(Icons.local_parking, size: 80, color: AppColors.primary),
                         ),
@@ -81,7 +88,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(16),
-                            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.15), blurRadius: 10)],
+                            boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.15), blurRadius: 10)],
                           ),
                           child: const Icon(Icons.directions_car, size: 32, color: AppColors.primary),
                         ),

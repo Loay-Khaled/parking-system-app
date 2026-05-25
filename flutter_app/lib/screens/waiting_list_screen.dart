@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../services/api_constants.dart';
@@ -24,7 +23,6 @@ class _WaitingListScreenState extends State<WaitingListScreen>
   String? _status;         // 'waiting' or 'offered'
   String? _offeredSpotId;
   DateTime? _offerExpiresAt;
-  String? _entryId;
 
   // Countdown timer
   Timer? _pollTimer;
@@ -83,7 +81,6 @@ class _WaitingListScreenState extends State<WaitingListScreen>
           _status = newStatus;
           _offeredSpotId = newOfferSpot;
           _offerExpiresAt = expiresAt;
-          _entryId = data['entryId']?.toString();
           _loading = false;
         });
       }
@@ -122,7 +119,7 @@ class _WaitingListScreenState extends State<WaitingListScreen>
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.available.withOpacity(0.1),
+              color: AppColors.available.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: AppColors.available),
             ),
@@ -357,7 +354,7 @@ class _WaitingListScreenState extends State<WaitingListScreen>
       Container(
         width: 96, height: 96,
         decoration: BoxDecoration(
-            color: AppColors.available.withOpacity(0.1), shape: BoxShape.circle),
+            color: AppColors.available.withValues(alpha: 0.1), shape: BoxShape.circle),
         child: const Icon(Icons.check_circle_outline, size: 52, color: AppColors.available),
       ),
       const SizedBox(height: 20),
@@ -371,9 +368,9 @@ class _WaitingListScreenState extends State<WaitingListScreen>
         width: double.infinity,
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: AppColors.available.withOpacity(0.08),
+          color: AppColors.available.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.available.withOpacity(0.4)),
+          border: Border.all(color: AppColors.available.withValues(alpha: 0.4)),
         ),
         child: Column(children: [
           Row(mainAxisAlignment: MainAxisAlignment.center, children: [
@@ -415,7 +412,7 @@ class _WaitingListScreenState extends State<WaitingListScreen>
       Container(
         width: 96, height: 96,
         decoration: BoxDecoration(
-            color: AppColors.warning.withOpacity(0.1), shape: BoxShape.circle),
+            color: AppColors.warning.withValues(alpha: 0.1), shape: BoxShape.circle),
         child: const Icon(Icons.people_outline, size: 52, color: AppColors.warning),
       ),
       const SizedBox(height: 20),
@@ -460,11 +457,11 @@ class _WaitingListScreenState extends State<WaitingListScreen>
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
           gradient: LinearGradient(colors: [
-            AppColors.primary.withOpacity(0.1),
-            AppColors.secondary.withOpacity(0.1)
+            AppColors.primary.withValues(alpha: 0.1),
+            AppColors.secondary.withValues(alpha: 0.1)
           ]),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppColors.primary.withOpacity(0.2)),
+          border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
         ),
         child: Column(children: [
           Container(
@@ -535,14 +532,14 @@ class _WaitingListScreenState extends State<WaitingListScreen>
           padding: const EdgeInsets.all(28),
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [AppColors.available.withOpacity(0.15), AppColors.primary.withOpacity(0.1)],
+              colors: [AppColors.available.withValues(alpha: 0.15), AppColors.primary.withValues(alpha: 0.1)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(color: AppColors.available, width: 2),
             boxShadow: [BoxShadow(
-                color: AppColors.available.withOpacity(0.25), blurRadius: 20, offset: const Offset(0, 8))],
+                color: AppColors.available.withValues(alpha: 0.25), blurRadius: 20, offset: const Offset(0, 8))],
           ),
           child: Column(children: [
             Container(
@@ -558,7 +555,7 @@ class _WaitingListScreenState extends State<WaitingListScreen>
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
               decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.1),
+                  color: AppColors.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(30)),
               child: Text(
                 'Spot ${_offeredSpotId ?? '?'} is reserved for you',
@@ -571,7 +568,7 @@ class _WaitingListScreenState extends State<WaitingListScreen>
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                  color: isUrgent ? AppColors.error.withOpacity(0.1) : Colors.white,
+                  color: isUrgent ? AppColors.error.withValues(alpha: 0.1) : Colors.white,
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(
                       color: isUrgent ? AppColors.error : AppColors.border)),
@@ -640,7 +637,7 @@ class _WaitingListScreenState extends State<WaitingListScreen>
       Container(
         width: 28, height: 28,
         decoration: BoxDecoration(
-            color: AppColors.primary.withOpacity(0.1), shape: BoxShape.circle),
+            color: AppColors.primary.withValues(alpha: 0.1), shape: BoxShape.circle),
         child: Center(
             child: Text(num,
                 style: const TextStyle(
