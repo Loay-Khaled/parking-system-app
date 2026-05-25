@@ -14,6 +14,8 @@ class BookingScreen extends StatefulWidget {
 class _BookingScreenState extends State<BookingScreen> {
   int _duration = 2;
   bool _loading = false;
+  bool _isCustom = false;
+  int _customHours = 6;
 
   int _cost(int hours) => hours <= 1 ? 0 : (hours - 1) * 10;
 
@@ -106,9 +108,12 @@ class _BookingScreenState extends State<BookingScreen> {
           ...List.generate(5, (i) {
             final hours = i + 1;
             final cost = _cost(hours);
-            final selected = _duration == hours;
+            final selected = !_isCustom && _duration == hours;
             return GestureDetector(
-              onTap: () => setState(() => _duration = hours),
+              onTap: () => setState(() {
+                _isCustom = false;
+                _duration = hours;
+              }),
               child: Container(
                 margin: const EdgeInsets.only(bottom: 10),
                 padding: const EdgeInsets.all(14),
@@ -138,6 +143,97 @@ class _BookingScreenState extends State<BookingScreen> {
               ),
             );
           }),
+          GestureDetector(
+            onTap: () => setState(() {
+              _isCustom = true;
+              _duration = _customHours;
+            }),
+            child: Container(
+              margin: const EdgeInsets.only(bottom: 10),
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: _isCustom ? AppColors.primary.withOpacity(0.05) : Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: _isCustom ? AppColors.primary : AppColors.border, width: _isCustom ? 2 : 1),
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        width: 20, height: 20,
+                        decoration: BoxDecoration(shape: BoxShape.circle,
+                            border: Border.all(color: _isCustom ? AppColors.primary : AppColors.border, width: 2)),
+                        child: _isCustom ? Center(child: Container(width: 10, height: 10, decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle))) : null,
+                      ),
+                      const SizedBox(width: 12),
+                      const Expanded(
+                        child: Text('Custom / Flexible Duration',
+                            style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.foreground, fontSize: 15)),
+                      ),
+                      if (!_isCustom)
+                        const Icon(Icons.arrow_drop_down, color: AppColors.muted)
+                      else
+                        Text('${_cost(_customHours)} EGP',
+                            style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.primary, fontSize: 15)),
+                    ],
+                  ),
+                  if (_isCustom) ...[
+                    const Divider(height: 24, color: AppColors.border),
+                    const Text('Adjust duration using the controls or slider below:',
+                        style: TextStyle(color: AppColors.muted, fontSize: 12)),
+                    const SizedBox(height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        IconButton(
+                          onPressed: _customHours > 1
+                              ? () => setState(() {
+                                    _customHours--;
+                                    _duration = _customHours;
+                                  })
+                              : null,
+                          icon: const Icon(Icons.remove_circle_outline, color: AppColors.primary),
+                          iconSize: 32,
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: Text('$_customHours hr${_customHours > 1 ? 's' : ''}',
+                              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primary)),
+                        ),
+                        IconButton(
+                          onPressed: _customHours < 48
+                              ? () => setState(() {
+                                    _customHours++;
+                                    _duration = _customHours;
+                                  })
+                              : null,
+                          icon: const Icon(Icons.add_circle_outline, color: AppColors.primary),
+                          iconSize: 32,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Slider(
+                      value: _customHours.toDouble(),
+                      min: 1,
+                      max: 24,
+                      divisions: 23,
+                      activeColor: AppColors.primary,
+                      inactiveColor: AppColors.border,
+                      label: '$_customHours Hours',
+                      onChanged: (val) {
+                        setState(() {
+                          _customHours = val.round();
+                          _duration = _customHours;
+                        });
+                      },
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );
