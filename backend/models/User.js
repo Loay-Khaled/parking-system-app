@@ -9,6 +9,7 @@ const userSchema = new mongoose.Schema({
   totalBookings: { type: Number, default: 0 },
   totalSpent: { type: Number, default: 0 },
   activePenalties: { type: Number, default: 0 },
+  isAdmin: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },
 });
 

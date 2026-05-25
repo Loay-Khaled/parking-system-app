@@ -30,4 +30,14 @@ class ApiConstants {
 
   // Profile
   static const String profile = '$baseUrl/profile';
+
+  // ADMIN endpoints
+  static const String adminStats = '$baseUrl/admin/stats';
+  static const String adminUsers = '$baseUrl/admin/users';
+  static String adminDeleteUser(String id) => '$baseUrl/admin/users/$id';
+  static const String adminBookings = '$baseUrl/admin/bookings';
+  static String adminCancelBooking(String id) => '$baseUrl/admin/bookings/$id/cancel';
+  static const String adminSpots = '$baseUrl/admin/spots';
+  static String adminUpdateSpotStatus(String spotId) => '$baseUrl/admin/spots/$spotId/status';
+  static const String adminSendNotification = '$baseUrl/admin/notifications/send';
 }
