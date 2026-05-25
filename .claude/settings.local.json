@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git clone *)",
+      "Bash(git -C \"c:\\\\Users\\\\Loay khaled\\\\Desktop\\\\mobile app final\" init)",
+      "Bash(git -C \"c:\\\\Users\\\\Loay khaled\\\\Desktop\\\\mobile app final\" remote add origin https://github.com/MMoamen28/parking-system-app.git)",
+      "Bash(git -C \"c:\\\\Users\\\\Loay khaled\\\\Desktop\\\\mobile app final\" fetch origin)",
+      "Bash(git -C \"c:\\\\Users\\\\Loay khaled\\\\Desktop\\\\mobile app final\" checkout -b main origin/main)",
+      "Bash(git -C \"c:\\\\Users\\\\Loay khaled\\\\Desktop\\\\mobile app final\" checkout -b master origin/master)"
+    ]
+  }
+}
