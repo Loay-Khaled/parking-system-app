@@ -83,8 +83,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             child: _loading
                 ? const Center(child: CircularProgressIndicator())
                 : _notifications.isEmpty
-                    ? Center(
-                        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: const [
+                    ? const Center(
+                        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
                           Icon(Icons.notifications_none, size: 64, color: AppColors.muted),
                           SizedBox(height: 16),
                           Text('No notifications yet', style: TextStyle(color: AppColors.muted, fontSize: 16)),
@@ -102,15 +102,15 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                             return Container(
                               padding: const EdgeInsets.all(14),
                               decoration: BoxDecoration(
-                                color: n.read ? Colors.white : AppColors.primary.withOpacity(0.03),
+                                color: n.read ? Colors.white : AppColors.primary.withValues(alpha: 0.03),
                                 borderRadius: BorderRadius.circular(14),
-                                border: Border.all(color: n.read ? AppColors.border : AppColors.primary.withOpacity(0.2)),
+                                border: Border.all(color: n.read ? AppColors.border : AppColors.primary.withValues(alpha: 0.2)),
                               ),
                               child: Row(
                                 children: [
                                   Container(
                                     width: 42, height: 42,
-                                    decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
+                                    decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
                                     child: Icon(_typeIcon(n.type), color: color, size: 22),
                                   ),
                                   const SizedBox(width: 12),

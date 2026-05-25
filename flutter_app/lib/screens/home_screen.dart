@@ -16,7 +16,7 @@ class _HomeScreenState extends State<HomeScreen> {
   User? _user;
   int _availableSpots = 0;
   int _totalSpots = 0;
-  int _currentNav = 0;
+  final int _currentNav = 0;
   bool _loading = true;
 
   @override
@@ -94,7 +94,7 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               Container(
                 width: 48, height: 48,
-                decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), shape: BoxShape.circle),
+                decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), shape: BoxShape.circle),
                 child: const Icon(Icons.local_parking, color: Colors.white, size: 26),
               ),
               const SizedBox(width: 12),
@@ -111,7 +111,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 onTap: () => Navigator.pushNamed(context, '/notifications'),
                 child: Container(
                   width: 42, height: 42,
-                  decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), shape: BoxShape.circle),
+                  decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), shape: BoxShape.circle),
                   child: const Icon(Icons.notifications_outlined, color: Colors.white, size: 22),
                 ),
               ),
@@ -168,7 +168,7 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               Container(
                 width: 48, height: 48,
-                decoration: BoxDecoration(color: AppColors.success.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+                decoration: BoxDecoration(color: AppColors.success.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
                 child: const Icon(Icons.location_on, color: AppColors.success, size: 26),
               ),
               const SizedBox(width: 12),
@@ -183,7 +183,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(color: AppColors.success.withOpacity(0.1), borderRadius: BorderRadius.circular(30)),
+                decoration: BoxDecoration(color: AppColors.success.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(30)),
                 child: const Text('Available', style: TextStyle(color: AppColors.success, fontSize: 12, fontWeight: FontWeight.w600)),
               ),
             ],
@@ -244,15 +244,15 @@ class _HomeScreenState extends State<HomeScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient: LinearGradient(colors: [AppColors.secondary.withOpacity(0.1), AppColors.primary.withOpacity(0.1)]),
+        gradient: LinearGradient(colors: [AppColors.secondary.withValues(alpha: 0.1), AppColors.primary.withValues(alpha: 0.1)]),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.secondary.withOpacity(0.2)),
+        border: Border.all(color: AppColors.secondary.withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [
           Container(
             width: 44, height: 44,
-            decoration: BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+            decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
             child: const Icon(Icons.directions_car, color: AppColors.secondary, size: 24),
           ),
           const SizedBox(width: 12),

@@ -84,7 +84,7 @@ class ConfirmationScreen extends StatelessWidget {
       children: [
         Container(
           width: 40, height: 40,
-          decoration: BoxDecoration(color: AppColors.primary.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
+          decoration: BoxDecoration(color: AppColors.primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
           child: Icon(icon, color: AppColors.primary, size: 20),
         ),
         const SizedBox(width: 14),
@@ -117,7 +117,7 @@ class ConfirmationScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              gradient: LinearGradient(colors: [AppColors.primary.withOpacity(0.05), AppColors.secondary.withOpacity(0.05)]),
+              gradient: LinearGradient(colors: [AppColors.primary.withValues(alpha: 0.05), AppColors.secondary.withValues(alpha: 0.05)]),
               borderRadius: BorderRadius.circular(16),
             ),
             child: QrImageView(

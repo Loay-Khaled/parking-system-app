@@ -166,7 +166,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
         _statCard('Active Now', '${_stats!['activeBookings'] ?? 0}', Icons.directions_car, const Color(0xFF10B981)),
         _statCard(
           'Revenue (EGP)',
-          '${((_stats!['totalRevenue'] ?? 0) as num).toStringAsFixed(0)}',
+          ((_stats!['totalRevenue'] ?? 0) as num).toStringAsFixed(0),
           Icons.payments,
           const Color(0xFFF59E0B),
         ),
