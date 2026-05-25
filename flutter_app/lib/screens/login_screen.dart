@@ -32,7 +32,9 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!mounted) return;
 
     if (result['success']) {
-      Navigator.pushReplacementNamed(context, '/home');
+      final isAdmin = await AuthService.isAdmin();
+      if (!mounted) return;
+      Navigator.pushReplacementNamed(context, isAdmin ? '/admin-home' : '/home');
     } else {
       setState(() { _error = result['message']; _loading = false; });
     }

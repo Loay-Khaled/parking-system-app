@@ -3,7 +3,7 @@ class ApiConstants {
   // For Android emulator use: http://10.0.2.2:3000/api
   // For iOS simulator use: http://localhost:3000/api
   // For physical device use: http://YOUR_COMPUTER_IP:3000/api
-  static const String baseUrl = 'http://localhost:3000/api';
+  static const String baseUrl = 'http://10.0.2.2:3000/api';
 
   // Auth endpoints
   static const String login = '$baseUrl/auth/login';
@@ -32,4 +32,14 @@ class ApiConstants {
 
   // Profile
   static const String profile = '$baseUrl/profile';
+
+  // ADMIN endpoints
+  static const String adminStats = '$baseUrl/admin/stats';
+  static const String adminUsers = '$baseUrl/admin/users';
+  static String adminDeleteUser(String id) => '$baseUrl/admin/users/$id';
+  static const String adminBookings = '$baseUrl/admin/bookings';
+  static String adminCancelBooking(String id) => '$baseUrl/admin/bookings/$id/cancel';
+  static const String adminSpots = '$baseUrl/admin/spots';
+  static String adminUpdateSpotStatus(String spotId) => '$baseUrl/admin/spots/$spotId/status';
+  static const String adminSendNotification = '$baseUrl/admin/notifications/send';
 }

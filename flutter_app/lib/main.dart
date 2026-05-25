@@ -12,6 +12,11 @@ import 'screens/bookings_screen.dart';
 import 'screens/waiting_list_screen.dart';
 import 'screens/notifications_screen.dart';
 import 'screens/profile_screen.dart';
+import 'screens/admin/admin_home_screen.dart';
+import 'screens/admin/admin_users_screen.dart';
+import 'screens/admin/admin_bookings_screen.dart';
+import 'screens/admin/admin_spots_screen.dart';
+import 'screens/admin/admin_notifications_screen.dart';
 import 'models/booking.dart';
 
 void main() {
@@ -58,6 +63,17 @@ class AASTParkingApp extends StatelessWidget {
             return MaterialPageRoute(builder: (_) => const NotificationsScreen());
           case '/profile':
             return MaterialPageRoute(builder: (_) => const ProfileScreen());
+          // Admin routes
+          case '/admin-home':
+            return MaterialPageRoute(builder: (_) => const AdminHomeScreen());
+          case '/admin-users':
+            return MaterialPageRoute(builder: (_) => const AdminUsersScreen());
+          case '/admin-bookings':
+            return MaterialPageRoute(builder: (_) => const AdminBookingsScreen());
+          case '/admin-spots':
+            return MaterialPageRoute(builder: (_) => const AdminSpotsScreen());
+          case '/admin-notifications':
+            return MaterialPageRoute(builder: (_) => const AdminNotificationsScreen());
           default:
             return MaterialPageRoute(builder: (_) => const LoginScreen());
         }

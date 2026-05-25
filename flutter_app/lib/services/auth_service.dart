@@ -37,6 +37,11 @@ class AuthService {
     return token != null;
   }
 
+  static Future<bool> isAdmin() async {
+    final user = await getUser();
+    return user?.isAdmin ?? false;
+  }
+
   static Future<Map<String, dynamic>> login(String email, String password) async {
     try {
       final response = await http.post(
