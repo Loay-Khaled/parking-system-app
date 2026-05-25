@@ -245,7 +245,8 @@ class _AdminBookingsScreenState extends State<AdminBookingsScreen> {
   Widget _bookingCard(Map<String, dynamic> booking) {
     final status = booking['status']?.toString() ?? 'unknown';
     final color = _statusColor(status);
-    final user = booking['userId'] as Map<String, dynamic>?;
+    final userRaw = booking['userId'];
+    final Map<String, dynamic>? user = userRaw is Map<String, dynamic> ? userRaw : null;
     final isActive = status == 'active';
     final bookingId = booking['_id'] ?? booking['id'] ?? '';
 
