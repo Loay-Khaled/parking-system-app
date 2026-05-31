@@ -46,6 +46,23 @@ class ApiConstants {
   // Profile
   static String get profile => '$baseUrl/profile';
 
+  // Vehicles
+  static String get vehicles => '$baseUrl/vehicles';
+  static String deleteVehicle(String id) => '$baseUrl/vehicles/$id';
+
+  // Appeals
+  static String get myAppeals => '$baseUrl/appeals/my';
+  static String get adminAppeals => '$baseUrl/appeals';
+  static String resolveAppeal(String id) => '$baseUrl/appeals/$id/resolve';
+  static String get submitAppeal => '$baseUrl/appeals';
+
+  // Recommendations
+  static String get recommendations => '$baseUrl/recommendations/spot';
+
+  // Analytics
+  static String get hourlyHeatmap => '$baseUrl/analytics/hourly-heatmap';
+  static String get adminAnalytics => '$baseUrl/admin/analytics';
+
   // ADMIN endpoints
   static String get adminStats => '$baseUrl/admin/stats';
   static String get adminUsers => '$baseUrl/admin/users';
@@ -55,4 +72,15 @@ class ApiConstants {
   static String get adminSpots => '$baseUrl/admin/spots';
   static String adminUpdateSpotStatus(String spotId) => '$baseUrl/admin/spots/$spotId/status';
   static String get adminSendNotification => '$baseUrl/admin/notifications/send';
+
+  // Accessibility endpoints
+  static String get applyAccessibilityPermit => '$baseUrl/accessibility/apply';
+  static String get myAccessibilityPermit => '$baseUrl/accessibility/my-permit';
+  static String get adminAccessibilityApplications => '$baseUrl/accessibility/applications';
+  static String resolveAccessibilityApplication(String userId) => '$baseUrl/accessibility/applications/$userId/resolve';
+  static String toggleSpotAccessibility(String spotId) => '$baseUrl/accessibility/spots/$spotId/toggle';
+
+  // Admin user detail endpoints
+  static String adminUserById(String userId) => '$baseUrl/admin/users/$userId';
+  static String adminUserAccessibility(String userId) => '$baseUrl/admin/users/$userId/accessibility';
 }

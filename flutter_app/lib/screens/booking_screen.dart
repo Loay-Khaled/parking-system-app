@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../services/api_constants.dart';
 import '../models/booking.dart';
+import '../models/user.dart';
+import '../services/auth_service.dart';
 import '../theme/app_theme.dart';
 
 class BookingScreen extends StatefulWidget {
@@ -16,6 +18,22 @@ class _BookingScreenState extends State<BookingScreen> {
   bool _loading = false;
   bool _isCustom = false;
   int _customHours = 6;
+  User? _user;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUser();
+  }
+
+  Future<void> _loadUser() async {
+    final user = await AuthService.getUser();
+    setState(() => _user = user);
+    try {
+      final freshUser = await AuthService.refreshUser();
+      setState(() => _user = freshUser);
+    } catch (_) {}
+  }
 
   int _cost(int hours) => hours <= 1 ? 0 : (hours - 1) * 10;
 
@@ -26,20 +44,113 @@ class _BookingScreenState extends State<BookingScreen> {
     return '$hour:${end.minute.toString().padLeft(2, '0')} $period';
   }
 
+  Future<bool> _showPaymentConfirmationDialog(int cost) async {
+    await _loadUser();
+    if (!mounted) return false;
+    final balance = _user?.walletBalance ?? 0.0;
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirm Payment'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Amount to pay: $cost EGP', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+            const SizedBox(height: 12),
+            Text(
+              'Your Wallet Balance: ${balance.toStringAsFixed(2)} EGP',
+              style: TextStyle(
+                color: balance >= cost ? AppColors.success : AppColors.error,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            if (balance < cost) ...[
+              const SizedBox(height: 16),
+              const Text(
+                'Insufficient funds in your virtual wallet.',
+                style: TextStyle(color: AppColors.error, fontSize: 13),
+              ),
+            ],
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          if (balance >= cost)
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              style: TextButton.styleFrom(foregroundColor: AppColors.success),
+              child: const Text('Pay from Wallet'),
+            )
+          else
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context, false);
+                Navigator.pushNamed(context, '/wallet').then((_) => _loadUser());
+              },
+              style: TextButton.styleFrom(foregroundColor: AppColors.primary),
+              child: const Text('Top Up'),
+            ),
+        ],
+      ),
+    );
+    return confirm ?? false;
+  }
+
   Future<void> _confirm() async {
+    final cost = _cost(_duration);
+    
+    // If there is a cost, prompt for payment first
+    if (cost > 0) {
+      final confirmed = await _showPaymentConfirmationDialog(cost);
+      if (!confirmed) return;
+    }
+
     setState(() => _loading = true);
     try {
+      // 1. If cost > 0, call the payment API first
+      if (cost > 0) {
+        await ApiService.processPayment(cost.toDouble());
+      }
+
+      // 2. Call the booking API to create the booking
       final data = await ApiService.post(ApiConstants.bookings, {
         'spotId': widget.spotId,
         'duration': _duration,
       });
+      
+      // Refresh user to get updated wallet balance and spending stats cached locally
+      try {
+        await AuthService.refreshUser();
+      } catch (_) {}
+
       if (!mounted) return;
       final booking = Booking.fromJson(data);
       Navigator.pushReplacementNamed(context, '/confirmation', arguments: booking);
     } catch (e) {
       if (!mounted) return;
+      
+      final errorMsg = e.toString().replaceAll('Exception: ', '');
+      final isInsufficientFunds = errorMsg.toLowerCase().contains('insufficient funds');
+
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: ${e.toString().replaceAll('Exception: ', '')}'), backgroundColor: AppColors.error),
+        SnackBar(
+          content: Text(isInsufficientFunds ? 'Insufficient funds. Please recharge your wallet.' : 'Error: $errorMsg'),
+          backgroundColor: AppColors.error,
+          action: isInsufficientFunds
+              ? SnackBarAction(
+                  label: 'Top Up',
+                  textColor: Colors.white,
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/wallet').then((_) => _loadUser());
+                  },
+                )
+              : null,
+        ),
       );
       setState(() => _loading = false);
     }

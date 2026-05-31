@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_service.dart';
 import '../../services/api_constants.dart';
+import '../../services/accessibility_service.dart';
+import '../../theme/app_theme.dart';
 import 'admin_bottom_nav.dart';
 
 class AdminHomeScreen extends StatefulWidget {
@@ -17,6 +19,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   Map<String, dynamic>? _stats;
   bool _loading = true;
   String? _error;
+  int _pendingAccessibilityCount = 0;
 
   @override
   void initState() {
@@ -31,8 +34,16 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     });
     try {
       final data = await ApiService.get(ApiConstants.adminStats);
+      int pendingCount = 0;
+      try {
+        final pendingApps = await AccessibilityService.fetchPendingApplications();
+        pendingCount = pendingApps.length;
+      } catch (_) {
+        // Fallback silently if it fails
+      }
       setState(() {
         _stats = data as Map<String, dynamic>;
+        _pendingAccessibilityCount = pendingCount;
         _loading = false;
       });
     } catch (e) {
@@ -289,10 +300,28 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
         'color': const Color(0xFF10B981),
       },
       {
+        'icon': Icons.accessible_forward_outlined,
+        'label': 'Accessibility',
+        'route': '/admin-accessibility',
+        'color': AppColors.primary,
+      },
+      {
         'icon': Icons.campaign,
         'label': 'Notifications',
         'route': '/admin-notifications',
         'color': const Color(0xFFF59E0B),
+      },
+      {
+        'icon': Icons.analytics_outlined,
+        'label': 'Revenue Analytics',
+        'route': '/admin-analytics',
+        'color': const Color(0xFF6366F1),
+      },
+      {
+        'icon': Icons.gavel_outlined,
+        'label': 'Manage Appeals',
+        'route': '/admin-appeals',
+        'color': const Color(0xFFEF4444),
       },
     ];
 
@@ -305,6 +334,9 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
       childAspectRatio: 2.2,
       children: actions.map((a) {
         final color = a['color'] as Color;
+        final isAcc = a['route'] == '/admin-accessibility';
+        final showBadge = isAcc && _pendingAccessibilityCount > 0;
+
         return GestureDetector(
           onTap: () => Navigator.pushReplacementNamed(context, a['route'] as String),
           child: Container(
@@ -335,6 +367,22 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                     ),
                   ),
                 ),
+                if (showBadge)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppColors.error,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      '$_pendingAccessibilityCount',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),

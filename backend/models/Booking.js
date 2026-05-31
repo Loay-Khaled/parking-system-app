@@ -15,6 +15,13 @@ const bookingSchema = new mongoose.Schema({
   },
   qrCode: { type: String },
   penalty: { type: Number, default: 0 },
+  checkedInAt: { type: Date, default: null },
+  checkedOutAt: { type: Date, default: null },
+  isCheckedIn: { type: Boolean, default: false },
+  isCheckedOut: { type: Boolean, default: false },
+  noShowCancelled: { type: Boolean, default: false },
+  reminderSent: { type: Boolean, default: false },
+  reminderAcknowledged: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },
 });
 

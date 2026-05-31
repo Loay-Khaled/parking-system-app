@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/user.dart';
+import '../models/parking_spot.dart';
 import '../services/api_service.dart';
 import '../services/api_constants.dart';
 import '../services/auth_service.dart';
@@ -12,12 +13,17 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> with RouteAware {
   User? _user;
   int _availableSpots = 0;
   int _totalSpots = 0;
   final int _currentNav = 0;
   bool _loading = true;
+
+  // Nearest spot state
+  ParkingSpot? _nearestSpot;
+  bool _loadingNearest = true;
+  bool _noSpotsAvailable = false;
 
   @override
   void initState() {
@@ -27,16 +33,81 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _loadData() async {
     _user = await AuthService.getUser();
+    // Load spots count and nearest spot concurrently
+    await Future.wait([
+      _loadSpotsCount(),
+      _loadNearestSpot(),
+      _refreshUser(),
+    ]);
+  }
+
+  Future<void> _loadSpotsCount() async {
     try {
       final spotsData = await ApiService.get(ApiConstants.spots);
-      setState(() {
-        _availableSpots = spotsData['availableCount'] ?? 0;
-        _totalSpots = spotsData['totalCount'] ?? 0;
-        _loading = false;
-      });
-    } catch (e) {
-      setState(() => _loading = false);
+      if (mounted) {
+        setState(() {
+          _availableSpots = spotsData['availableCount'] ?? 0;
+          _totalSpots = spotsData['totalCount'] ?? 0;
+        });
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _refreshUser() async {
+    try {
+      final freshUser = await AuthService.refreshUser();
+      if (mounted) setState(() { _user = freshUser; _loading = false; });
+    } catch (_) {
+      if (mounted) setState(() => _loading = false);
     }
+  }
+
+  Future<void> _loadNearestSpot() async {
+    if (mounted) setState(() { _loadingNearest = true; _noSpotsAvailable = false; });
+    try {
+      // Always fetch fresh from API — never use a cached value
+      final spot = await ApiService.getNearestSpot(0.0, 0.0);
+      if (mounted) {
+        setState(() {
+          _nearestSpot = spot;
+          _noSpotsAvailable = spot == null;
+          _loadingNearest = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() { _nearestSpot = null; _noSpotsAvailable = true; _loadingNearest = false; });
+    }
+  }
+
+  Future<void> _onRefresh() async {
+    await Future.wait([_loadSpotsCount(), _loadNearestSpot(), _refreshUser()]);
+  }
+
+  Future<void> _onBookNow() async {
+    if (_nearestSpot == null) return;
+    final spotId = _nearestSpot!.spotId;
+
+    // Re-fetch spot status guard before navigating
+    try {
+      final freshData = await ApiService.get(ApiConstants.spotById(spotId));
+      final freshSpot = ParkingSpot.fromJson(freshData);
+      if (!freshSpot.isAvailable) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('This spot was just taken. Finding next nearest spot…'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+        await _loadNearestSpot();
+        return;
+      }
+    } catch (_) {
+      // If re-fetch fails, let the booking screen handle it
+    }
+
+    if (!mounted) return;
+    Navigator.pushNamed(context, '/spot-details', arguments: spotId);
   }
 
   void _onNavTap(int index) {
@@ -49,31 +120,38 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        children: [
-          Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  _buildHeader(),
-                  Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      children: [
-                        _buildNearestSpotCard(),
-                        const SizedBox(height: 16),
-                        _buildSummaryCard(),
-                        const SizedBox(height: 16),
-                        _buildPromoCard(),
-                      ],
+      body: RefreshIndicator(
+        onRefresh: _onRefresh,
+        color: AppColors.primary,
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: Column(
+                  children: [
+                    _buildHeader(),
+                    Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        children: [
+                          _buildNearestSpotCard(),
+                          const SizedBox(height: 16),
+                          _buildSummaryCard(),
+                          const SizedBox(height: 16),
+                          _buildAvailabilityCard(),
+                          const SizedBox(height: 16),
+                          _buildPromoCard(),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
-          BottomNav(currentIndex: _currentNav, onTap: _onNavTap),
-        ],
+            BottomNav(currentIndex: _currentNav, onTap: _onNavTap),
+          ],
+        ),
       ),
     );
   }
@@ -162,42 +240,112 @@ class _HomeScreenState extends State<HomeScreen> {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.border),
       ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 48, height: 48,
-                decoration: BoxDecoration(color: AppColors.success.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
-                child: const Icon(Icons.location_on, color: AppColors.success, size: 26),
+      child: _loadingNearest
+          ? _buildNearestSpotShimmer()
+          : _noSpotsAvailable || _nearestSpot == null
+              ? _buildNoSpotsState()
+              : _buildNearestSpotContent(),
+    );
+  }
+
+  Widget _buildNearestSpotShimmer() {
+    return Column(
+      children: [
+        Row(
+          children: [
+            Container(
+              width: 48, height: 48,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade200,
+                borderRadius: BorderRadius.circular(12),
               ),
-              const SizedBox(width: 12),
-              const Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Nearest Spot', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15, color: AppColors.foreground)),
-                    Text('Zone A - Spot 1', style: TextStyle(fontSize: 13, color: AppColors.muted)),
-                  ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(color: AppColors.success.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(30)),
-                child: const Text('Available', style: TextStyle(color: AppColors.success, fontSize: 12, fontWeight: FontWeight.w600)),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () => Navigator.pushNamed(context, '/spot-details', arguments: 'A1'),
-              child: const Text('Book Now'),
             ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(height: 14, width: 100, decoration: BoxDecoration(color: Colors.grey.shade200, borderRadius: BorderRadius.circular(4))),
+                  const SizedBox(height: 6),
+                  Container(height: 12, width: 80, decoration: BoxDecoration(color: Colors.grey.shade200, borderRadius: BorderRadius.circular(4))),
+                ],
+              ),
+            ),
+            Container(height: 28, width: 80, decoration: BoxDecoration(color: Colors.grey.shade200, borderRadius: BorderRadius.circular(30))),
+          ],
+        ),
+        const SizedBox(height: 14),
+        Container(
+          height: 44, width: double.infinity,
+          decoration: BoxDecoration(color: Colors.grey.shade200, borderRadius: BorderRadius.circular(12)),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildNoSpotsState() {
+    return Column(
+      children: [
+        Row(
+          children: [
+            Container(
+              width: 48, height: 48,
+              decoration: BoxDecoration(color: Colors.grey.shade100, borderRadius: BorderRadius.circular(12)),
+              child: const Icon(Icons.location_off, color: Colors.grey, size: 26),
+            ),
+            const SizedBox(width: 12),
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('No spots available right now', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15, color: AppColors.foreground)),
+                  Text('Check back in a few minutes', style: TextStyle(fontSize: 13, color: AppColors.muted)),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildNearestSpotContent() {
+    final spot = _nearestSpot!;
+    return Column(
+      children: [
+        Row(
+          children: [
+            Container(
+              width: 48, height: 48,
+              decoration: BoxDecoration(color: AppColors.success.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
+              child: const Icon(Icons.location_on, color: AppColors.success, size: 26),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Nearest Spot', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15, color: AppColors.foreground)),
+                  Text('Zone ${spot.zone} – ${spot.spotId}', style: const TextStyle(fontSize: 13, color: AppColors.muted)),
+                ],
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(color: AppColors.success.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(30)),
+              child: const Text('Available', style: TextStyle(color: AppColors.success, fontSize: 12, fontWeight: FontWeight.w600)),
+            ),
+          ],
+        ),
+        const SizedBox(height: 14),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: _onBookNow,
+            child: const Text('Book Now'),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -225,6 +373,40 @@ class _HomeScreenState extends State<HomeScreen> {
           _summaryRow('Total Spent', '${_user?.totalSpent.toInt() ?? 0} EGP', AppColors.foreground),
           const SizedBox(height: 12),
           _summaryRow('Penalties', '${_user?.activePenalties.toInt() ?? 0} EGP', AppColors.error),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAvailabilityCard() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(Icons.analytics_outlined, color: AppColors.primary, size: 20),
+              SizedBox(width: 8),
+              Text('Typical Parking Patterns', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15, color: AppColors.foreground)),
+            ],
+          ),
+          const SizedBox(height: 10),
+          const Text('Check the predicted busyness of parking zones A, B, and C based on historical data.',
+              style: TextStyle(fontSize: 12, color: AppColors.muted)),
+          const SizedBox(height: 14),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () => Navigator.pushNamed(context, '/predicted-availability'),
+              child: const Text('View Predicted Availability'),
+            ),
+          ),
         ],
       ),
     );

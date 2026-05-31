@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'auth_service.dart';
+import 'api_constants.dart';
+import '../models/parking_spot.dart';
 
 class ApiService {
   static Future<Map<String, String>> _headers() async {
@@ -37,6 +39,28 @@ class ApiService {
   static Future<dynamic> delete(String url) async {
     final response = await http.delete(Uri.parse(url), headers: await _headers());
     return _handleResponse(response);
+  }
+
+  static Future<dynamic> rechargeWallet(double amount) async {
+    return await post('${ApiConstants.baseUrl}/payments/recharge', {'amount': amount});
+  }
+
+  static Future<dynamic> processPayment(double amount) async {
+    return await post('${ApiConstants.baseUrl}/payments/pay', {'amount': amount});
+  }
+
+  static Future<List<dynamic>> getTransactionHistory() async {
+    final response = await get('${ApiConstants.baseUrl}/payments/history');
+    return response as List<dynamic>;
+  }
+
+  static Future<ParkingSpot?> getNearestSpot(double refX, double refY) async {
+    try {
+      final response = await get('${ApiConstants.baseUrl}/spots/nearest?x=$refX&y=$refY');
+      return ParkingSpot.fromJson(response);
+    } catch (_) {
+      return null;
+    }
   }
 
   static dynamic _handleResponse(http.Response response) {

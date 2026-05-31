@@ -168,12 +168,88 @@ class _ProfileScreenState extends State<ProfileScreen> {
     ]);
   }
 
+  Widget _buildAccessibilityChip() {
+    final permit = _user?.accessibilityPermit;
+    final status = permit?.status ?? 'none';
+    final isApproved = status == 'approved';
+    final disabilityType = permit?.disabilityType ?? '';
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: isApproved
+            ? const Color(0xFF1D4ED8).withValues(alpha: 0.06)
+            : const Color(0xFF94A3B8).withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isApproved
+              ? const Color(0xFF1D4ED8).withValues(alpha: 0.25)
+              : const Color(0xFF94A3B8).withValues(alpha: 0.25),
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.accessible_forward_outlined,
+            size: 22,
+            color: isApproved ? const Color(0xFF1D4ED8) : AppColors.muted,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text('Disability Permit', style: TextStyle(fontSize: 15, color: AppColors.foreground)),
+                const SizedBox(height: 2),
+                Text(
+                  isApproved
+                      ? 'Approved${disabilityType.isNotEmpty ? " – $disabilityType" : ""}'
+                      : 'No disability permit',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: isApproved ? const Color(0xFF1D4ED8) : AppColors.muted,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: isApproved
+                  ? const Color(0xFF1D4ED8).withValues(alpha: 0.12)
+                  : const Color(0xFF94A3B8).withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(
+              isApproved ? 'Active' : 'None',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: isApproved ? const Color(0xFF1D4ED8) : AppColors.muted,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildMenuCard() {
     return Container(
       decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.border)),
       child: Column(
         children: [
-          _menuItem(Icons.credit_card_outlined, 'Payment Methods', () {}),
+          _menuItem(Icons.account_balance_wallet_outlined, 'My Wallet', () => Navigator.pushNamed(context, '/wallet')),
+          const Divider(height: 1, color: AppColors.border),
+          _menuItem(Icons.directions_car_outlined, 'My Vehicles', () => Navigator.pushNamed(context, '/vehicles')),
+          const Divider(height: 1, color: AppColors.border),
+          _buildAccessibilityChip(),
+          const Divider(height: 1, color: AppColors.border),
+          _menuItem(Icons.gavel_outlined, 'My Appeals', () => Navigator.pushNamed(context, '/appeals')),
           const Divider(height: 1, color: AppColors.border),
           _menuItem(Icons.notifications_outlined, 'Notifications', () => Navigator.pushNamed(context, '/notifications')),
           const Divider(height: 1, color: AppColors.border),
@@ -185,7 +261,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _menuItem(IconData icon, String label, VoidCallback onTap) {
+  Widget _menuItem(IconData icon, String label, VoidCallback onTap, {String? subtext, Color? subtextColor}) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -193,7 +269,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
         child: Row(children: [
           Icon(icon, color: AppColors.muted, size: 22),
           const SizedBox(width: 12),
-          Expanded(child: Text(label, style: const TextStyle(fontSize: 15, color: AppColors.foreground))),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(label, style: const TextStyle(fontSize: 15, color: AppColors.foreground)),
+                if (subtext != null) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    subtext,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: subtextColor ?? AppColors.muted,
+                      fontWeight: subtextColor != null ? FontWeight.w600 : FontWeight.normal,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
           const Icon(Icons.chevron_right, color: AppColors.muted, size: 20),
         ]),
       ),

@@ -16,12 +16,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _emailCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
   final _plateCtrl = TextEditingController();
+  final _idNumberCtrl = TextEditingController();
   bool _loading = false;
   String? _error;
 
   @override
   void dispose() {
-    _nameCtrl.dispose(); _emailCtrl.dispose(); _passCtrl.dispose(); _plateCtrl.dispose();
+    _nameCtrl.dispose();
+    _emailCtrl.dispose();
+    _passCtrl.dispose();
+    _plateCtrl.dispose();
+    _idNumberCtrl.dispose();
     super.dispose();
   }
 
@@ -34,6 +39,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       email: _emailCtrl.text.trim(),
       password: _passCtrl.text,
       carPlate: _plateCtrl.text.trim().toUpperCase(),
+      idNumber: _idNumberCtrl.text.trim(),
     );
     if (!mounted) return;
 
@@ -104,6 +110,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   prefixIcon: Icons.lock_outline, controller: _passCtrl,
                   isPassword: true,
                   validator: (v) => (v?.length ?? 0) < 6 ? 'Min 6 characters' : null,
+                ),
+                const SizedBox(height: 16),
+                CustomTextField(
+                  label: 'ID Number', hint: 'Student or Staff ID',
+                  prefixIcon: Icons.badge_outlined, controller: _idNumberCtrl,
+                  validator: (v) => v!.isEmpty ? 'ID number is required' : null,
                 ),
                 const SizedBox(height: 16),
                 CustomTextField(

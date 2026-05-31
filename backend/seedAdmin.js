@@ -17,6 +17,7 @@ async function seedAdmin() {
       user.isAdmin = true;
       user.name = 'Admin';
       user.carPlate = 'ADMIN-01';
+      user.idNumber = 'ADMIN-01';
       await user.save();
       console.log('✅ Admin user updated successfully');
     } else {
@@ -26,6 +27,7 @@ async function seedAdmin() {
         email,
         password,
         carPlate: 'ADMIN-01',
+        idNumber: 'ADMIN-01',
         isAdmin: true
       });
       console.log('✅ Admin user created successfully');

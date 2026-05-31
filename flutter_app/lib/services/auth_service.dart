@@ -4,6 +4,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user.dart';
 import 'api_constants.dart';
 
+import 'api_service.dart';
+
 class AuthService {
   static const String _tokenKey = 'auth_token';
   static const String _userKey = 'user_data';
@@ -20,10 +22,22 @@ class AuthService {
     return User.fromJson(jsonDecode(userJson));
   }
 
+  static Future<void> saveUser(User user) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_userKey, jsonEncode(user.toJson()));
+  }
+
   static Future<void> _saveSession(String token, User user) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_tokenKey, token);
-    await prefs.setString(_userKey, jsonEncode(user.toJson()));
+    await saveUser(user);
+  }
+
+  static Future<User> refreshUser() async {
+    final userData = await ApiService.get(ApiConstants.profile);
+    final user = User.fromJson(userData);
+    await saveUser(user);
+    return user;
   }
 
   static Future<void> clearSession() async {
@@ -66,12 +80,19 @@ class AuthService {
     required String email,
     required String password,
     required String carPlate,
+    required String idNumber,
   }) async {
     try {
       final response = await http.post(
         Uri.parse(ApiConstants.register),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'name': name, 'email': email, 'password': password, 'carPlate': carPlate}),
+        body: jsonEncode({
+          'name': name,
+          'email': email,
+          'password': password,
+          'carPlate': carPlate,
+          'idNumber': idNumber,
+        }),
       );
       final data = jsonDecode(response.body);
       if (response.statusCode == 201) {

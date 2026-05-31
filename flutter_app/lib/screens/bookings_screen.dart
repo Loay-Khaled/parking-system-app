@@ -109,41 +109,60 @@ class _BookingCard extends StatelessWidget {
   final VoidCallback onRefresh;
   const _BookingCard({required this.booking, required this.onRefresh});
 
+  Widget _getStatusText() {
+    if (booking.noShowCancelled || booking.status == 'cancelled') {
+      return const Text("🔴 No-show / Cancelled", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.error));
+    }
+    if (booking.isCheckedOut || booking.status == 'completed') {
+      return const Text("✅ Completed", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.muted));
+    }
+    if (booking.isCheckedIn) {
+      return const Text("🟢 Currently parked", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.success));
+    }
+    return const Text("⏳ Awaiting gate scan", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.reserved));
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: booking.isActive ? AppColors.primary.withValues(alpha: 0.3) : AppColors.border),
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 48, height: 48,
-                decoration: BoxDecoration(
-                  color: booking.isActive ? AppColors.primary.withValues(alpha: 0.1) : AppColors.muted.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(Icons.location_on, color: booking.isActive ? AppColors.primary : AppColors.muted, size: 26),
-              ),
-              const SizedBox(width: 12),
-              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(booking.spotId, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16, color: AppColors.foreground)),
-                Text('Zone ${booking.zone}', style: const TextStyle(fontSize: 13, color: AppColors.muted)),
-              ])),
-              if (booking.isActive)
+    return GestureDetector(
+      onTap: () {
+        Navigator.pushNamed(context, '/qr', arguments: booking.id).then((_) => onRefresh());
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: booking.isActive ? AppColors.primary.withValues(alpha: 0.3) : AppColors.border),
+        ),
+        child: Column(
+          children: [
+            Row(
+              children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                  decoration: BoxDecoration(color: AppColors.success.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(20)),
-                  child: const Text('Active', style: TextStyle(color: AppColors.success, fontSize: 12, fontWeight: FontWeight.w600)),
+                  width: 48, height: 48,
+                  decoration: BoxDecoration(
+                    color: booking.isActive ? AppColors.primary.withValues(alpha: 0.1) : AppColors.muted.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(Icons.location_on, color: booking.isActive ? AppColors.primary : AppColors.muted, size: 26),
                 ),
-            ],
-          ),
+                const SizedBox(width: 12),
+                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text(booking.spotId, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16, color: AppColors.foreground)),
+                  Text('Zone ${booking.zone}', style: const TextStyle(fontSize: 13, color: AppColors.muted)),
+                  const SizedBox(height: 4),
+                  _getStatusText(),
+                ])),
+                if (booking.isActive)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(color: AppColors.success.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(20)),
+                    child: const Text('Active', style: TextStyle(color: AppColors.success, fontSize: 12, fontWeight: FontWeight.w600)),
+                  ),
+              ],
+            ),
           const SizedBox(height: 12),
           const Divider(color: AppColors.border, height: 1),
           const SizedBox(height: 12),
@@ -170,6 +189,7 @@ class _BookingCard extends StatelessWidget {
           ],
         ],
       ),
+     ),
     );
   }
 

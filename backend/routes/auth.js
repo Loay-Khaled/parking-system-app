@@ -5,19 +5,22 @@ const User = require('../models/User');
 // Register
 router.post('/register', async (req, res) => {
   try {
-    const { name, email, password, carPlate } = req.body;
-    if (!name || !email || !password || !carPlate) {
+    const { name, email, password, carPlate, idNumber } = req.body;
+    if (!name || !email || !password || !carPlate || !idNumber) {
       return res.status(400).json({ message: 'All fields are required' });
     }
-    const existing = await User.findOne({ email });
-    if (existing) return res.status(400).json({ message: 'Email already registered' });
+    const existingEmail = await User.findOne({ email });
+    if (existingEmail) return res.status(400).json({ message: 'Email already registered' });
 
-    const user = await User.create({ name, email, password, carPlate });
+    const existingId = await User.findOne({ idNumber });
+    if (existingId) return res.status(400).json({ message: 'ID Number already registered' });
+
+    const user = await User.create({ name, email, password, carPlate, idNumber });
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '30d' });
 
     res.status(201).json({
       token,
-      user: { id: user._id, name: user.name, email: user.email, carPlate: user.carPlate },
+      user: { id: user._id, name: user.name, email: user.email, carPlate: user.carPlate, idNumber: user.idNumber },
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -42,6 +45,7 @@ router.post('/login', async (req, res) => {
         name: user.name,
         email: user.email,
         carPlate: user.carPlate,
+        idNumber: user.idNumber,
         totalBookings: user.totalBookings,
         totalSpent: user.totalSpent,
         activePenalties: user.activePenalties,

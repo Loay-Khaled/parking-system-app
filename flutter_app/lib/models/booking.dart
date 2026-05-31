@@ -8,6 +8,13 @@ class Booking {
   final DateTime endTime;
   final String status;
   final String? qrCode;
+  final DateTime? checkedInAt;
+  final DateTime? checkedOutAt;
+  final bool isCheckedIn;
+  final bool isCheckedOut;
+  final bool noShowCancelled;
+  final bool reminderSent;
+  final bool reminderAcknowledged;
 
   Booking({
     required this.id,
@@ -19,11 +26,18 @@ class Booking {
     required this.endTime,
     required this.status,
     this.qrCode,
+    this.checkedInAt,
+    this.checkedOutAt,
+    this.isCheckedIn = false,
+    this.isCheckedOut = false,
+    this.noShowCancelled = false,
+    this.reminderSent = false,
+    this.reminderAcknowledged = false,
   });
 
   factory Booking.fromJson(Map<String, dynamic> json) {
     return Booking(
-      id: json['_id'] ?? '',
+      id: json['_id'] ?? json['id'] ?? '',
       spotId: json['spotId'] ?? '',
       zone: json['zone'] ?? '',
       duration: json['duration'] ?? 0,
@@ -32,6 +46,13 @@ class Booking {
       endTime: DateTime.parse(json['endTime']),
       status: json['status'] ?? 'active',
       qrCode: json['qrCode'],
+      checkedInAt: json['checkedInAt'] != null ? DateTime.parse(json['checkedInAt']) : null,
+      checkedOutAt: json['checkedOutAt'] != null ? DateTime.parse(json['checkedOutAt']) : null,
+      isCheckedIn: json['isCheckedIn'] ?? false,
+      isCheckedOut: json['isCheckedOut'] ?? false,
+      noShowCancelled: json['noShowCancelled'] ?? false,
+      reminderSent: json['reminderSent'] ?? false,
+      reminderAcknowledged: json['reminderAcknowledged'] ?? false,
     );
   }
 

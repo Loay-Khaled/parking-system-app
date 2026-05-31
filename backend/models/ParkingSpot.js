@@ -9,8 +9,12 @@ const parkingSpotSchema = new mongoose.Schema({
     default: 'available',
   },
   floor: { type: Number, default: 1 },
+  x: { type: Number, default: 0 },
+  y: { type: Number, default: 0 },
   currentBookingId: { type: mongoose.Schema.Types.ObjectId, ref: 'Booking', default: null },
   availableAt: { type: Date, default: null },
+  isAccessibility: { type: Boolean, default: false },
+  accessibilityLabel: { type: String, default: '' },
   updatedAt: { type: Date, default: Date.now },
 });
 

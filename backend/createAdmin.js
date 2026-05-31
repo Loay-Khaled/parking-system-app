@@ -33,6 +33,7 @@ async function createAdmin() {
       email,
       password,
       carPlate: 'ADMIN-00',
+      idNumber: 'ADMIN-00',
       isAdmin: true,
     });
 

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import '../models/parking_spot.dart';
+import '../models/user.dart';
 import '../services/api_service.dart';
 import '../services/api_constants.dart';
+import '../services/auth_service.dart';
 import '../theme/app_theme.dart';
 
 class SpotDetailsScreen extends StatefulWidget {
@@ -14,11 +16,18 @@ class SpotDetailsScreen extends StatefulWidget {
 class _SpotDetailsScreenState extends State<SpotDetailsScreen> {
   ParkingSpot? _spot;
   bool _loading = true;
+  User? _currentUser;
 
   @override
   void initState() {
     super.initState();
+    _loadUser();
     _loadSpot();
+  }
+
+  Future<void> _loadUser() async {
+    final user = await AuthService.getUser();
+    setState(() => _currentUser = user);
   }
 
   Future<void> _loadSpot() async {
@@ -60,6 +69,8 @@ class _SpotDetailsScreenState extends State<SpotDetailsScreen> {
                           children: [
                             _buildSpotHeader(),
                             const SizedBox(height: 16),
+                            _buildAccessibilityNotice(),
+                            if (_spot!.isAccessibility) const SizedBox(height: 16),
                             _buildPricingCard(),
                             const SizedBox(height: 16),
                             _buildNoticeCard(),
@@ -68,7 +79,9 @@ class _SpotDetailsScreenState extends State<SpotDetailsScreen> {
                               SizedBox(
                                 width: double.infinity,
                                 child: ElevatedButton(
-                                  onPressed: () => Navigator.pushNamed(context, '/booking', arguments: widget.spotId),
+                                  onPressed: (_spot!.isAccessibility && _currentUser?.accessibilityPermit.status != 'approved')
+                                      ? null
+                                      : () => Navigator.pushNamed(context, '/booking', arguments: widget.spotId),
                                   child: const Text('Book This Spot'),
                                 ),
                               ),
@@ -183,6 +196,47 @@ class _SpotDetailsScreenState extends State<SpotDetailsScreen> {
           Text('• Parking in another user\'s spot will incur penalties', style: TextStyle(fontSize: 13, color: Color(0xFF1D4ED8))),
           SizedBox(height: 4),
           Text('• Overstaying will be charged at double rate', style: TextStyle(fontSize: 13, color: Color(0xFF1D4ED8))),
+        ],
+      ),
+    );
+  }
+  Widget _buildAccessibilityNotice() {
+    if (_spot == null || !_spot!.isAccessibility) return const SizedBox();
+    
+    final status = _currentUser?.accessibilityPermit.status ?? 'none';
+    final isApproved = status == 'approved';
+    
+    final cardBgColor = isApproved ? AppColors.success.withValues(alpha: 0.1) : AppColors.error.withValues(alpha: 0.1);
+    final borderColor = isApproved ? AppColors.success : AppColors.error;
+    
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: cardBgColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: borderColor.withValues(alpha: 0.3), width: 1.5),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.accessible, color: borderColor, size: 24),
+              const SizedBox(width: 8),
+              Text(
+                _spot!.accessibilityLabel.isNotEmpty ? _spot!.accessibilityLabel : 'Reserved Accessibility Spot',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: borderColor),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            isApproved
+                ? 'Your accessibility permit is active. You are authorized to book this spot.'
+                : 'This spot is restricted to users with an approved disability permit. Please contact the parking office to have your permit assigned by an administrator.',
+            style: const TextStyle(fontSize: 13, color: AppColors.foreground, height: 1.4),
+          ),
         ],
       ),
     );

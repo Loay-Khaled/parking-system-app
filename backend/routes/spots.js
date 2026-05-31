@@ -23,6 +23,40 @@ router.get('/zone/:zone', auth, async (req, res) => {
   }
 });
 
+// Get nearest available spot
+router.get('/nearest', auth, async (req, res) => {
+  try {
+    const refX = parseFloat(req.query.x);
+    const refY = parseFloat(req.query.y);
+
+    if (isNaN(refX) || isNaN(refY)) {
+      return res.status(400).json({ message: 'Invalid or missing reference coordinates x, y' });
+    }
+
+    const availableSpots = await ParkingSpot.find({ status: 'available' });
+    if (availableSpots.length === 0) {
+      return res.status(404).json({ message: 'No available parking spots found' });
+    }
+
+    let nearestSpot = null;
+    let minDistance = Infinity;
+
+    for (const spot of availableSpots) {
+      const dx = (spot.x || 0) - refX;
+      const dy = (spot.y || 0) - refY;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      if (distance < minDistance) {
+        minDistance = distance;
+        nearestSpot = spot;
+      }
+    }
+
+    res.json(nearestSpot);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 // Get single spot
 router.get('/:spotId', auth, async (req, res) => {
   try {

@@ -28,40 +28,64 @@ class CustomTextField extends StatefulWidget {
 class _CustomTextFieldState extends State<CustomTextField> {
   bool _obscure = true;
 
+  // Car plate fields keep the existing static-label + hint layout.
+  static const _carPlateLabels = {'Car Plate Number', 'License Plate', 'Car Plate'};
+
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          widget.label,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: AppColors.foreground,
+    final isCarPlate = _carPlateLabels.contains(widget.label);
+
+    if (isCarPlate) {
+      // ── Car plate: original layout unchanged ──────────────────────────────
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            widget.label,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: AppColors.foreground,
+            ),
           ),
-        ),
-        const SizedBox(height: 8),
-        TextFormField(
-          controller: widget.controller,
-          obscureText: widget.isPassword && _obscure,
-          keyboardType: widget.keyboardType,
-          validator: widget.validator,
-          style: const TextStyle(fontSize: 15, color: AppColors.foreground),
-          decoration: InputDecoration(
-            hintText: widget.hint,
-            hintStyle: const TextStyle(color: AppColors.muted, fontSize: 14),
-            prefixIcon: Icon(widget.prefixIcon, color: AppColors.muted, size: 20),
-            suffixIcon: widget.isPassword
-                ? IconButton(
-                    icon: Icon(_obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                        color: AppColors.muted, size: 20),
-                    onPressed: () => setState(() => _obscure = !_obscure),
-                  )
-                : null,
+          const SizedBox(height: 8),
+          TextFormField(
+            controller: widget.controller,
+            keyboardType: widget.keyboardType,
+            validator: widget.validator,
+            style: const TextStyle(fontSize: 15, color: AppColors.foreground),
+            decoration: InputDecoration(
+              hintText: widget.hint,
+              hintStyle: const TextStyle(color: AppColors.muted, fontSize: 14),
+              prefixIcon: Icon(widget.prefixIcon, color: AppColors.muted, size: 20),
+            ),
           ),
-        ),
-      ],
+        ],
+      );
+    }
+
+    // ── All other fields: floating labelText, no hintText ─────────────────
+    return TextFormField(
+      controller: widget.controller,
+      obscureText: widget.isPassword && _obscure,
+      keyboardType: widget.keyboardType,
+      validator: widget.validator,
+      style: const TextStyle(fontSize: 15, color: AppColors.foreground),
+      decoration: InputDecoration(
+        labelText: widget.label,
+        labelStyle: const TextStyle(color: AppColors.muted, fontSize: 14),
+        prefixIcon: Icon(widget.prefixIcon, color: AppColors.muted, size: 20),
+        suffixIcon: widget.isPassword
+            ? IconButton(
+                icon: Icon(
+                  _obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                  color: AppColors.muted,
+                  size: 20,
+                ),
+                onPressed: () => setState(() => _obscure = !_obscure),
+              )
+            : null,
+      ),
     );
   }
 }
