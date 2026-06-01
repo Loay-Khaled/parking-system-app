@@ -21,6 +21,7 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen> {
   String _selectedType = 'info';
   final _titleCtrl = TextEditingController();
   final _messageCtrl = TextEditingController();
+  String _modalSearchQuery = '';
 
   @override
   void initState() {
@@ -38,15 +39,29 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen> {
   Future<void> _loadUsers() async {
     setState(() => _loadingUsers = true);
     try {
-      final data = await ApiService.get(ApiConstants.adminUsers);
+      final data = await ApiService.get(ApiConstants.adminUsersListAll);
       setState(() {
-        _users = data is List
-            ? data.where((u) => (u as Map<String, dynamic>)['isAdmin'] != true).toList()
-            : [];
+        if (data is Map && data['users'] is List) {
+          _users = List.from(data['users']);
+        } else {
+          _users = [];
+        }
         _loadingUsers = false;
       });
-    } catch (_) {
-      setState(() => _loadingUsers = false);
+    } catch (e) {
+      setState(() {
+        _users = [];
+        _selectedUserId = 'all';
+        _loadingUsers = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to load users. Tap refresh to try again.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -64,16 +79,28 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen> {
     }
     setState(() => _sending = true);
     try {
-      final result = await ApiService.post(ApiConstants.adminSendNotification, {
+      await ApiService.post(ApiConstants.adminSendNotification, {
         'userId': _selectedUserId,
         'title': title,
         'message': message,
         'type': _selectedType,
       });
       if (!mounted) return;
+
+      String recipientName = 'All Users';
+      if (_selectedUserId != 'all') {
+        final targetUser = _users.firstWhere(
+          (u) => (u['_id'] ?? u['id'] ?? '').toString() == _selectedUserId,
+          orElse: () => null,
+        );
+        if (targetUser != null) {
+          recipientName = targetUser['name'] ?? 'Selected User';
+        }
+      }
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text((result as Map)['message']?.toString() ?? 'Notification sent!'),
+          content: Text('Notification sent to $recipientName.'),
           backgroundColor: Colors.green,
         ),
       );
@@ -119,8 +146,169 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen> {
     }
   }
 
+  String _getSelectedUserLabel() {
+    final user = _users.firstWhere(
+      (u) => (u['_id'] ?? u['id'] ?? '').toString() == _selectedUserId,
+      orElse: () => null,
+    );
+    if (user != null) {
+      return '${user['name'] ?? ''} (${user['email'] ?? ''})';
+    }
+    return 'Select Recipient';
+  }
+
+  void _showRecipientPicker() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            final query = _modalSearchQuery.toLowerCase().trim();
+            final filteredUsers = _users.where((u) {
+              final name = (u['name'] ?? '').toString().toLowerCase();
+              final email = (u['email'] ?? '').toString().toLowerCase();
+              return name.contains(query) || email.contains(query);
+            }).toList();
+
+            return Padding(
+              padding: EdgeInsets.only(
+                top: 20,
+                left: 16,
+                right: 16,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Select Recipient',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1E3A5F),
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    decoration: InputDecoration(
+                      hintText: 'Search by name or email...',
+                      prefixIcon: const Icon(Icons.search),
+                      filled: true,
+                      fillColor: const Color(0xFFF1F5F9),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                    ),
+                    onChanged: (val) {
+                      setModalState(() {
+                        _modalSearchQuery = val;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxHeight: MediaQuery.of(context).size.height * 0.4,
+                    ),
+                    child: ListView(
+                      shrinkWrap: true,
+                      children: [
+                        ListTile(
+                          leading: const Icon(Icons.people, color: Color(0xFF1E3A5F)),
+                          title: const Text('All Users', style: TextStyle(fontWeight: FontWeight.bold)),
+                          trailing: _selectedUserId == 'all'
+                              ? const Icon(Icons.check_circle, color: Color(0xFF10B981))
+                              : null,
+                          onTap: () {
+                            setState(() {
+                              _selectedUserId = 'all';
+                            });
+                            Navigator.pop(context);
+                          },
+                        ),
+                        const Divider(height: 1),
+                        ...filteredUsers.map((user) {
+                          final id = (user['_id'] ?? user['id'] ?? '').toString();
+                          final name = user['name'] ?? '';
+                          final email = user['email'] ?? '';
+                          final isSelected = _selectedUserId == id;
+                          return ListTile(
+                            leading: Container(
+                              width: 36,
+                              height: 36,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF1E3A5F).withValues(alpha: 0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Center(
+                                child: Text(
+                                  name.isNotEmpty ? name.substring(0, 1).toUpperCase() : '?',
+                                  style: const TextStyle(
+                                    color: Color(0xFF1E3A5F),
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            title: Text(name, style: const TextStyle(fontWeight: FontWeight.w600)),
+                            subtitle: Text(email, style: const TextStyle(fontSize: 12)),
+                            trailing: isSelected
+                                ? const Icon(Icons.check_circle, color: Color(0xFF10B981))
+                                : null,
+                            onTap: () {
+                              setState(() {
+                                _selectedUserId = id;
+                              });
+                              Navigator.pop(context);
+                            },
+                          );
+                        }),
+                        if (filteredUsers.isEmpty && query.isNotEmpty)
+                          const Padding(
+                            padding: EdgeInsets.all(24.0),
+                            child: Center(
+                              child: Text(
+                                'No users match search query',
+                                style: TextStyle(color: Colors.grey),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    ).then((_) {
+      _modalSearchQuery = '';
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    final hasSelectedUser = _selectedUserId == 'all' || _users.any((u) => (u['_id'] ?? u['id'] ?? '').toString() == _selectedUserId);
+    final dropdownValue = hasSelectedUser ? _selectedUserId : 'all';
+
     return Scaffold(
       backgroundColor: const Color(0xFFF0F4F8),
       appBar: AppBar(
@@ -139,6 +327,13 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen> {
             ),
           ],
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh, color: Colors.white),
+            onPressed: _loadUsers,
+            tooltip: 'Refresh user list',
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -148,44 +343,42 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen> {
             _card(
               'Recipient',
               Icons.people_alt,
-              _loadingUsers
-                  ? const Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(8),
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
-                    )
-                  : Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF8FAFC),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: const Color(0xFFE2E8F0)),
-                      ),
-                      child: DropdownButton<String>(
-                        value: _selectedUserId,
-                        isExpanded: true,
-                        underline: const SizedBox(),
-                        items: [
-                          const DropdownMenuItem(
-                            value: 'all',
-                            child: Text('All Users'),
+              GestureDetector(
+                onTap: _loadingUsers ? null : _showRecipientPicker,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          _loadingUsers
+                              ? 'Loading users...'
+                              : dropdownValue == 'all'
+                                  ? 'All Users'
+                                  : _getSelectedUserLabel(),
+                          style: TextStyle(
+                            fontSize: 15,
+                            color: _loadingUsers ? const Color(0xFF94A3B8) : const Color(0xFF1A1F36),
                           ),
-                          ..._users.map((u) {
-                            final user = u as Map<String, dynamic>;
-                            final id = (user['_id'] ?? user['id'] ?? '').toString();
-                            return DropdownMenuItem(
-                              value: id,
-                              child: Text(
-                                '${user['name'] ?? ''} (${user['email'] ?? ''})',
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            );
-                          }),
-                        ],
-                        onChanged: (v) => setState(() => _selectedUserId = v ?? 'all'),
+                        ),
                       ),
-                    ),
+                      if (_loadingUsers)
+                        const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      else
+                        const Icon(Icons.arrow_drop_down, color: Color(0xFF64748B)),
+                    ],
+                  ),
+                ),
+              ),
             ),
             const SizedBox(height: 12),
             _card(

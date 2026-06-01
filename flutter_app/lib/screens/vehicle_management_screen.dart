@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../models/vehicle.dart';
+import '../models/user.dart';
 import '../services/vehicle_service.dart';
+import '../services/auth_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/custom_text_field.dart';
 
@@ -14,11 +16,18 @@ class VehicleManagementScreen extends StatefulWidget {
 class _VehicleManagementScreenState extends State<VehicleManagementScreen> {
   List<Vehicle> _vehicles = [];
   bool _loading = true;
+  User? _currentUser;
 
   @override
   void initState() {
     super.initState();
+    _loadUser();
     _loadVehicles();
+  }
+
+  Future<void> _loadUser() async {
+    final user = await AuthService.getUser();
+    setState(() => _currentUser = user);
   }
 
   Future<void> _loadVehicles() async {
@@ -75,7 +84,7 @@ class _VehicleManagementScreenState extends State<VehicleManagementScreen> {
     }
   }
 
-  void _showAddVehicleSheet() {
+  void _showAddVehicleSheet({String? prefilledPlate}) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -83,7 +92,7 @@ class _VehicleManagementScreenState extends State<VehicleManagementScreen> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (context) => const _AddVehicleBottomSheet(),
+      builder: (context) => _AddVehicleBottomSheet(prefilledPlate: prefilledPlate),
     ).then((success) {
       if (success == true) {
         _loadVehicles();
@@ -102,45 +111,47 @@ class _VehicleManagementScreenState extends State<VehicleManagementScreen> {
         child: _loading
             ? const Center(child: CircularProgressIndicator())
             : _vehicles.isEmpty
-                ? Center(
-                    child: SingleChildScrollView(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            width: 96,
-                            height: 96,
-                            decoration: BoxDecoration(
-                              color: AppColors.primary.withValues(alpha: 0.1),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(Icons.directions_car_outlined, size: 48, color: AppColors.primary),
+                ? (_currentUser?.carPlate != null && _currentUser!.carPlate.isNotEmpty)
+                    ? _buildFallbackVehicleTile()
+                    : Center(
+                        child: SingleChildScrollView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                width: 96,
+                                height: 96,
+                                decoration: BoxDecoration(
+                                  color: AppColors.primary.withValues(alpha: 0.1),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(Icons.directions_car_outlined, size: 48, color: AppColors.primary),
+                              ),
+                              const SizedBox(height: 24),
+                              const Text(
+                                'No vehicles registered',
+                                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.foreground),
+                              ),
+                              const SizedBox(height: 8),
+                              const Text(
+                                'Add a vehicle to simplify your parking booking process.',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(fontSize: 14, color: AppColors.muted),
+                              ),
+                              const SizedBox(height: 32),
+                              ElevatedButton.icon(
+                                onPressed: _showAddVehicleSheet,
+                                icon: const Icon(Icons.add),
+                                label: const Text('Add Your First Vehicle'),
+                                style: ElevatedButton.styleFrom(
+                                  minimumSize: const Size(220, 50),
+                                ),
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 24),
-                          const Text(
-                            'No vehicles registered',
-                            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.foreground),
-                          ),
-                          const SizedBox(height: 8),
-                          const Text(
-                            'Add a vehicle to simplify your parking booking process.',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(fontSize: 14, color: AppColors.muted),
-                          ),
-                          const SizedBox(height: 32),
-                          ElevatedButton.icon(
-                            onPressed: _showAddVehicleSheet,
-                            icon: const Icon(Icons.add),
-                            label: const Text('Add Your First Vehicle'),
-                            style: ElevatedButton.styleFrom(
-                              minimumSize: const Size(220, 50),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  )
+                        ),
+                      )
                 : ListView.builder(
                     padding: const EdgeInsets.all(16),
                     itemCount: _vehicles.length,
@@ -250,6 +261,73 @@ class _VehicleManagementScreenState extends State<VehicleManagementScreen> {
     );
   }
 
+  Widget _buildFallbackVehicleTile() {
+    final plate = _currentUser?.carPlate ?? '';
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.all(16),
+      children: [
+        GestureDetector(
+          onTap: () => _showAddVehicleSheet(prefilledPlate: plate),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.warning.withValues(alpha: 0.05),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.warning.withValues(alpha: 0.3)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.02),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 52,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    color: AppColors.warning.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(Icons.warning_amber_rounded, color: AppColors.warning, size: 28),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        plate,
+                        style: const TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.foreground,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      const Text(
+                        'Your registered vehicle — tap to confirm details',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: AppColors.warning,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(Icons.arrow_forward_ios, size: 16, color: AppColors.muted),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   Color _parseColor(String colorName) {
     switch (colorName.toLowerCase().trim()) {
       case 'red':
@@ -282,7 +360,8 @@ class _VehicleManagementScreenState extends State<VehicleManagementScreen> {
 }
 
 class _AddVehicleBottomSheet extends StatefulWidget {
-  const _AddVehicleBottomSheet();
+  final String? prefilledPlate;
+  const _AddVehicleBottomSheet({this.prefilledPlate});
 
   @override
   State<_AddVehicleBottomSheet> createState() => _AddVehicleBottomSheetState();
@@ -296,6 +375,14 @@ class _AddVehicleBottomSheetState extends State<_AddVehicleBottomSheet> {
   final _colorCtrl = TextEditingController();
   bool _saving = false;
   String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.prefilledPlate != null) {
+      _plateCtrl.text = widget.prefilledPlate!;
+    }
+  }
 
   @override
   void dispose() {

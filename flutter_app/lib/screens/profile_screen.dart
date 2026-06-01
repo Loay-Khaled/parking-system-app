@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import '../models/user.dart';
 import '../services/auth_service.dart';
 import '../theme/app_theme.dart';
@@ -12,6 +13,7 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   User? _user;
+  int _debugTapCount = 0;
 
   @override
   void initState() { super.initState(); _loadUser(); }
@@ -69,6 +71,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         _buildMenuCard(),
                         const SizedBox(height: 16),
                         _buildLogoutButton(),
+                        if (kDebugMode) ...[
+                          const SizedBox(height: 24),
+                          GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _debugTapCount++;
+                                if (_debugTapCount >= 7) {
+                                  _debugTapCount = 0;
+                                  Navigator.pushNamed(context, '/debug-notifications');
+                                }
+                              });
+                            },
+                            child: const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 8.0),
+                              child: Text(
+                                'Version 1.0.0 (Debug - Tap 7 times)',
+                                style: TextStyle(color: AppColors.muted, fontSize: 12),
+                              ),
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ),

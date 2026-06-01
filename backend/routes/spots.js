@@ -33,7 +33,12 @@ router.get('/nearest', auth, async (req, res) => {
       return res.status(400).json({ message: 'Invalid or missing reference coordinates x, y' });
     }
 
-    const availableSpots = await ParkingSpot.find({ status: 'available' });
+    const excludeAccessibility = req.user.accessibilityPermit?.status !== 'approved';
+    const query = {
+      status: 'available',
+      ...(excludeAccessibility && { isAccessibility: false }),
+    };
+    const availableSpots = await ParkingSpot.find(query);
     if (availableSpots.length === 0) {
       return res.status(404).json({ message: 'No available parking spots found' });
     }

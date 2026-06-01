@@ -9,8 +9,6 @@ class ApiConstants {
       case TargetPlatform.android:
         // Android emulator loopback IP
         return 'http://10.0.2.2:3000/api';
-      case TargetPlatform.iOS:
-      case TargetPlatform.macOS:
       case TargetPlatform.windows:
       case TargetPlatform.linux:
       default:
@@ -66,6 +64,7 @@ class ApiConstants {
   // ADMIN endpoints
   static String get adminStats => '$baseUrl/admin/stats';
   static String get adminUsers => '$baseUrl/admin/users';
+  static String get adminUsersListAll => '$baseUrl/admin/users/list-all';
   static String adminDeleteUser(String id) => '$baseUrl/admin/users/$id';
   static String get adminBookings => '$baseUrl/admin/bookings';
   static String adminCancelBooking(String id) => '$baseUrl/admin/bookings/$id/cancel';

@@ -58,6 +58,24 @@ class _MapScreenState extends State<MapScreen> {
     setState(() => _loadingNearest = true);
     try {
       final spot = await ApiService.getNearestSpot(0.0, 0.0);
+
+      if (spot != null &&
+          spot.isAccessibility == true &&
+          _currentUser?.accessibilityPermit.status != 'approved') {
+        setState(() {
+          _nearestSpot = null;
+          _loadingNearest = false;
+        });
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('No regular spots available right now.'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+        return;
+      }
+
       setState(() {
         _nearestSpot = spot;
         _loadingNearest = false;
@@ -134,51 +152,68 @@ class _MapScreenState extends State<MapScreen> {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint('MediaQuery padding bottom: ${MediaQuery.of(context).padding.bottom}');
+    debugPrint('MediaQuery viewInsets bottom: ${MediaQuery.of(context).viewInsets.bottom}');
     return Scaffold(
-      body: Column(
+      body: Stack(
         children: [
-          Expanded(
-            child: RefreshIndicator(
-              onRefresh: _loadSpots,
-              child: CustomScrollView(
-                slivers: [
-                  SliverToBoxAdapter(child: _buildHeader()),
-                  if (_loading)
-                    const SliverFillRemaining(child: Center(child: CircularProgressIndicator()))
-                  else
-                    SliverPadding(
-                      padding: const EdgeInsets.all(20),
-                      sliver: SliverList(
-                        delegate: SliverChildListDelegate([
-                          _buildRecommendationsSection(),
-                          _buildLegend(),
-                          const SizedBox(height: 20),
-                          for (final zone in ['A', 'B', 'C']) ...[
-                            _buildZoneSection(zone),
-                            const SizedBox(height: 20),
-                          ],
-                        ]),
-                      ),
-                    ),
-                ],
+          Column(
+            children: [
+              Expanded(
+                child: RefreshIndicator(
+                  onRefresh: _loadSpots,
+                  child: CustomScrollView(
+                    clipBehavior: Clip.none,
+                    slivers: [
+                      SliverToBoxAdapter(child: _buildHeader()),
+                      if (_loading)
+                        const SliverFillRemaining(child: Center(child: CircularProgressIndicator()))
+                      else
+                        SliverPadding(
+                          padding: EdgeInsets.only(
+                            left: 20,
+                            right: 20,
+                            top: 20,
+                            bottom: 100 + MediaQuery.of(context).padding.bottom,
+                          ),
+                          sliver: SliverList(
+                            delegate: SliverChildListDelegate([
+                              _buildRecommendationsSection(),
+                              _buildLegend(),
+                              const SizedBox(height: 20),
+                              for (final zone in ['A', 'B', 'C']) ...[
+                                _buildZoneSection(zone),
+                                const SizedBox(height: 20),
+                              ],
+                              SizedBox(height: 120 + MediaQuery.of(context).padding.bottom),
+                            ]),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
               ),
+              BottomNav(currentIndex: 1, onTap: _onNavTap),
+            ],
+          ),
+          Positioned(
+            bottom: kBottomNavigationBarHeight + 16 + MediaQuery.of(context).padding.bottom,
+            right: 16,
+            child: FloatingActionButton.extended(
+              onPressed: _loadingNearest ? null : _findNearestSpot,
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+              icon: _loadingNearest
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                    )
+                  : const Icon(Icons.near_me),
+              label: const Text('Find Nearest Spot', style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ),
-          BottomNav(currentIndex: 1, onTap: _onNavTap),
         ],
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _loadingNearest ? null : _findNearestSpot,
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
-        icon: _loadingNearest
-            ? const SizedBox(
-                width: 18,
-                height: 18,
-                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-              )
-            : const Icon(Icons.near_me),
-        label: const Text('Find Nearest Spot', style: TextStyle(fontWeight: FontWeight.bold)),
       ),
     );
   }

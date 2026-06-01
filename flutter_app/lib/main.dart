@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'theme/app_theme.dart';
 import 'services/notification_service.dart';
+import 'screens/debug/notification_test_screen.dart';
 import 'services/api_service.dart';
 import 'services/api_constants.dart';
 import 'services/auth_service.dart';
@@ -45,6 +47,7 @@ void main() {
 
 class AASTParkingApp extends StatefulWidget {
   const AASTParkingApp({super.key});
+  static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
   @override
   State<AASTParkingApp> createState() => _AASTParkingAppState();
@@ -57,6 +60,14 @@ class _AASTParkingAppState extends State<AASTParkingApp> {
   void initState() {
     super.initState();
     NotificationService.initializeNotifications();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (NotificationService.pendingNotificationPayload != null) {
+        NotificationService.handleNotificationPayload(
+          NotificationService.pendingNotificationPayload,
+        );
+        NotificationService.pendingNotificationPayload = null;
+      }
+    });
     _reminderTimer = Timer.periodic(const Duration(seconds: 60), (timer) async {
       final token = await AuthService.getToken();
       if (token == null || token.isEmpty) return; // not logged in, skip
@@ -94,6 +105,7 @@ class _AASTParkingAppState extends State<AASTParkingApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: AASTParkingApp.navigatorKey,
       title: 'AAST Smart Parking',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
@@ -160,6 +172,11 @@ class _AASTParkingAppState extends State<AASTParkingApp> {
           case '/admin-user-detail':
             final userId = settings.arguments as String? ?? '';
             return MaterialPageRoute(builder: (_) => AdminUserDetailScreen(userId: userId));
+          case '/debug-notifications':
+            if (kDebugMode) {
+              return MaterialPageRoute(builder: (_) => const NotificationTestScreen());
+            }
+            return MaterialPageRoute(builder: (_) => const LoginScreen());
             
           default:
             return MaterialPageRoute(builder: (_) => const LoginScreen());

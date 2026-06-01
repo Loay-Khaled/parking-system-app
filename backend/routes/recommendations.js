@@ -10,7 +10,12 @@ router.get('/spot', auth, async (req, res) => {
     const userBookings = await Booking.find({ userId: req.user._id, status: 'completed' });
 
     // Get all currently available parking spots
-    const availableSpots = await ParkingSpot.find({ status: 'available' });
+    const excludeAccessibility = req.user.accessibilityPermit?.status !== 'approved';
+    const query = {
+      status: 'available',
+      ...(excludeAccessibility && { isAccessibility: false }),
+    };
+    const availableSpots = await ParkingSpot.find(query);
 
     // If user has no booking history, return up to 3 random available spots
     if (userBookings.length === 0) {

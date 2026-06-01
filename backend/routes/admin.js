@@ -54,6 +54,21 @@ router.get('/stats', protect, async (req, res) => {
   }
 });
 
+// GET /api/admin/users/list-all — non-paginated lightweight list for dropdowns
+router.get('/users/list-all', protect, async (req, res) => {
+  try {
+    const users = await User.find({ isAdmin: { $ne: true } }, {
+      name: 1,
+      email: 1,
+      carPlate: 1,
+    }).sort({ name: 1 });
+
+    res.json({ users });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to fetch users' });
+  }
+});
+
 // GET /api/admin/users — paginated list with search by _id or idNumber
 router.get('/users', protect, async (req, res) => {
   try {

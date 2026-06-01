@@ -44,7 +44,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (!mounted) return;
 
     if (result['success']) {
-      Navigator.pushReplacementNamed(context, '/home');
+      Navigator.pushReplacementNamed(
+        context,
+        '/home',
+        arguments: {
+          'justRegistered': true,
+          'carPlate': _plateCtrl.text.trim().toUpperCase(),
+        },
+      );
     } else {
       setState(() { _error = result['message']; _loading = false; });
     }

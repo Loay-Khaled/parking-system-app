@@ -29,6 +29,19 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   void initState() {
     super.initState();
     _loadData();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final args = ModalRoute.of(context)?.settings.arguments;
+      if (args is Map && args['justRegistered'] == true) {
+        final plate = args['carPlate'] ?? '';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Your vehicle $plate has been added to My Vehicles."),
+            backgroundColor: AppColors.success,
+          ),
+        );
+      }
+    });
   }
 
   Future<void> _loadData() async {
